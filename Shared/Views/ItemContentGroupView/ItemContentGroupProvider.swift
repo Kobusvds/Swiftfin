@@ -130,6 +130,11 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
             []
         }
 
+        // Movies and series show cast and crew before genres
+        if isCompactLayout(item) {
+            castAndCrewGroup(for: item)
+        }
+
         if let genres = item.itemGenres, genres.isNotEmpty {
             PillGroup(
                 displayTitle: L10n.genres,
@@ -205,13 +210,6 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
             )
             .makeGroups(environment: .default)
 
-        case .series:
-            try await ItemTypeContentGroupProvider(
-                itemTypes: [.season],
-                parent: item
-            )
-            .makeGroups(environment: .default)
-
         case .channel, .liveTvChannel, .tvChannel:
             PosterGroup(
                 id: "channel-programs",
@@ -250,17 +248,8 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
             )
         }
 
-        if let castAndCrew = item.mergedPeople, castAndCrew.isNotEmpty {
-            PosterGroup(
-                id: "cast-and-crew",
-                library: StaticLibrary(
-                    title: L10n.castAndCrew.localizedCapitalized,
-                    id: "cast-and-crew",
-                    elements: castAndCrew
-                ),
-                posterDisplayType: .portrait,
-                posterSize: .small
-            )
+        if !isCompactLayout(item) {
+            castAndCrewGroup(for: item)
         }
 
         PosterGroup(
@@ -279,11 +268,34 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
             )
         }
 
-        AboutItemGroup(
-            displayTitle: L10n.about,
-            id: "about",
-            item: item
-        )
+        if !isCompactLayout(item) {
+            AboutItemGroup(
+                displayTitle: L10n.about,
+                id: "about",
+                item: item
+            )
+        }
+    }
+
+    /// Movies and series show cast and crew before genres and hide the About section
+    private func isCompactLayout(_ item: BaseItemDto) -> Bool {
+        item.type == .movie || item.type == .series
+    }
+
+    @ContentGroupBuilder
+    private func castAndCrewGroup(for item: BaseItemDto) -> [any ContentGroup] {
+        if let castAndCrew = item.mergedPeople, castAndCrew.isNotEmpty {
+            PosterGroup(
+                id: "cast-and-crew",
+                library: StaticLibrary(
+                    title: L10n.castAndCrew.localizedCapitalized,
+                    id: "cast-and-crew",
+                    elements: castAndCrew
+                ),
+                posterDisplayType: .portrait,
+                posterSize: .small
+            )
+        }
     }
 
     @Published

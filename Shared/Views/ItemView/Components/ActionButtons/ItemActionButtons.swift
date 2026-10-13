@@ -9,7 +9,7 @@
 import Defaults
 import SwiftUI
 
-private struct ItemActionButtonLabelStyle: LabelStyle {
+struct ItemActionButtonLabelStyle: LabelStyle {
 
     @Environment(\.isSelected)
     private var isSelected
@@ -61,6 +61,7 @@ struct ItemActionButtons: View {
     @ObservedObject
     var provider: ItemContentGroupProvider
 
+    let showsPlayButton: Bool
     let buttons: [ItemActionButton]
     let overflowButtons: [ItemActionButton]
     let menuButtons: [ItemActionButton]
@@ -173,8 +174,13 @@ struct ItemActionButtons: View {
     var body: some View {
         let hasBarMenu = UIDevice.isTV && (overflowButtons.isNotEmpty || menuButtons.isNotEmpty)
 
-        if buttons.isNotEmpty || hasBarMenu {
+        if showsPlayButton || buttons.isNotEmpty || hasBarMenu {
             HStack(alignment: .center, spacing: UIDevice.isTV ? 24 : 8) {
+                if showsPlayButton {
+                    PlayButton(provider: provider)
+                        .focused(focusedButton, equals: ItemView.Component.play)
+                }
+
                 ForEach(buttons) { button in
                     Self.view(for: button)
                         .labelStyle(ItemActionButtonLabelStyle(activeColor: button.activeColor))

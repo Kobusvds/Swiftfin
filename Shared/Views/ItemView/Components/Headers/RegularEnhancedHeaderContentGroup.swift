@@ -28,7 +28,10 @@ extension ItemView {
             @StoredValue(.User.itemViewAttributes)
             private var attributes
 
-            private let headerAspectRatio = 2.0
+            // Movies and series use a hero image 25% shorter than the default
+            private var headerAspectRatio: CGFloat {
+                provider.item.type == .movie || provider.item.type == .series ? 2.0 / 0.75 : 2.0
+            }
 
             #if !os(tvOS)
             private var headerImageItem: BaseItemDto {

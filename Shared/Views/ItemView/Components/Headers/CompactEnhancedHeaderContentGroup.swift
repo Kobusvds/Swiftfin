@@ -29,7 +29,13 @@ extension ItemView {
             @StoredValue(.User.itemViewAttributes)
             private var attributes
 
-            private let headerAspectRatio = 1.6
+            private let imageAspectRatio = 1.6
+
+            // Movies and series use a header 25% shorter than the default. The image keeps
+            // its original size and fades behind the content so its crop and top edge are unchanged.
+            private var headerAspectRatio: CGFloat {
+                provider.item.type == .movie || provider.item.type == .series ? imageAspectRatio / 0.75 : imageAspectRatio
+            }
 
             @ViewBuilder
             private var logo: some View {
@@ -140,7 +146,7 @@ extension ItemView {
                                             }
                                     }
                                 }
-                                .aspectRatio(headerAspectRatio, contentMode: .fit)
+                                .aspectRatio(imageAspectRatio, contentMode: .fit)
                                 .accessibilityHidden(true)
                             }
                             .bottomEdgeGradient(bottomColor: resolvedColor.wrappedValue)

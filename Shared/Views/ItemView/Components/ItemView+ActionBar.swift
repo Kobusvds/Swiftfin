@@ -35,21 +35,14 @@ extension ItemView {
             let defaultFocusedButton = provider.item.presentPlayButton ?
                 ItemView.Component.play : visible.first?.id ?? ItemView.Component.menu
 
-            VStack(alignment: alignment, spacing: UIDevice.isTV ? 24 : 8) {
-                if provider.item.presentPlayButton {
-                    PlayButton(provider: provider)
-                        .coordinatedFocus(ItemView.Component.play, selection: $focusedButton)
-                        .frame(height: UIDevice.isTV ? 75 : 44)
-                }
-
-                ItemActionButtons(
-                    provider: provider,
-                    buttons: visible,
-                    overflowButtons: overflow,
-                    menuButtons: menu,
-                    focusedButton: $focusedButton
-                )
-            }
+            ItemActionButtons(
+                provider: provider,
+                showsPlayButton: provider.item.presentPlayButton,
+                buttons: visible,
+                overflowButtons: overflow,
+                menuButtons: menu,
+                focusedButton: $focusedButton
+            )
             .focusSection()
             .defaultFocus(
                 $focusedButton,

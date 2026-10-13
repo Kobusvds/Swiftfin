@@ -104,7 +104,20 @@ final class UserSessionManager: ObservableObject {
     @MainActor
     private func refreshCurrentSession() async {
         do {
-            try await updateCurrentSession(with: resolveStoredSession())
+            let storedSession = try resolveStoredSession()
+
+            // Keep the current session if nothing changed. Replacing it invalidates its
+            // item store, which leaves already open pages showing "Unknown" with no items.
+            if let storedSession,
+               let currentSession,
+               sessionTransition == nil,
+               storedSession.server == currentSession.server,
+               storedSession.user == currentSession.user
+            {
+                return
+            }
+
+            try await updateCurrentSession(with: storedSession)
         } catch {
             logger.error(
                 "Unable to refresh current user session",

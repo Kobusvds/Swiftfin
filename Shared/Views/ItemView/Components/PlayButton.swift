@@ -22,12 +22,6 @@ struct PlayButton: View {
     @Router
     private var router
 
-    private var mediaSource: String? {
-        guard provider.mediaPlayerItemProvider?.item.mediaSources?.count ?? 0 > 1 else { return nil }
-
-        return provider.mediaPlayerItemProvider?.mediaSource?.displayTitle
-    }
-
     private func play(fromBeginning: Bool = false) {
         let mediaPlayerItemProvider = if fromBeginning {
             provider.mediaPlayerItemProvider?.modifyingItem {
@@ -57,31 +51,14 @@ struct PlayButton: View {
         Button {
             play()
         } label: {
-            HStack {
-                Image(systemName: "play.fill")
-
-                VStack(spacing: 2) {
-                    Text(provider.mediaPlayerItemProvider?.item.playButtonLabel ?? L10n.play)
-
-                    if let mediaSource {
-                        Marquee(mediaSource, speed: 40, delay: 3, fade: 5)
-                            .font(.caption)
-                            .fontWeight(.medium)
-                    }
-                }
-            }
-            .font(.callout)
-            .fontWeight(.semibold)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .backport
-            .glassEffect(
-                .regular.selection(
-                    tint: accentColor,
-                    foregroundColor: accentColor.overlayColor
-                ),
-                in: .capsule
+            // Icon only; the text stays available as the accessibility label
+            Label(
+                provider.mediaPlayerItemProvider?.item.playButtonLabel ?? L10n.play,
+                systemImage: "play.fill"
             )
         }
+        .labelStyle(ItemActionButtonLabelStyle(activeColor: accentColor))
+        .isSelected(true)
         .buttonBorderShape(.capsule)
         .buttonStyle(BasicHoverButtonStyle())
         .contextMenu {
