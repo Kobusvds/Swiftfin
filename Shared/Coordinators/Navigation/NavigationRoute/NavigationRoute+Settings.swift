@@ -256,6 +256,20 @@ extension NavigationRoute {
         }
     }
 
+    static var navigationTabsSettings: NavigationRoute {
+        NavigationRoute(
+            id: "navigationTabsSettings"
+        ) {
+            NavigationTabsSettingsView()
+        }
+    }
+
+    static func navigationTabIcon(tab: NavigationTab) -> NavigationRoute {
+        NavigationRoute(id: "navigationTabIcon-\(tab.id)") {
+            NavigationTabsSettingsView.IconPicker(tab: tab)
+        }
+    }
+
     static var playbackQualitySettings: NavigationRoute {
         NavigationRoute(
             id: "playbackQualitySettings"

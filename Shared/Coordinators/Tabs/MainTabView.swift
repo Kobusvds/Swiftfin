@@ -17,6 +17,9 @@ struct MainTabView: View {
     #if os(tvOS)
     @Default(.Customization.tabBarPlacement)
     private var tabBarPlacement
+    #else
+    @Default(.Customization.navigationTabs)
+    private var navigationTabs
     #endif
 
     @InjectedObject(\.userSessionManager)
@@ -29,13 +32,17 @@ struct MainTabView: View {
         _tabCoordinator = StateObject(wrappedValue: Self.defaultTabCoordinator)
     }
 
+    #if os(iOS)
+    /// The user's chosen tabs, falling back to the defaults if none are chosen
+    private static func tabItems(for tabs: [NavigationTab]) -> [TabItem] {
+        (tabs.isEmpty ? NavigationTab.defaultTabs : tabs)
+            .map(TabItem.navigationTab)
+    }
+    #endif
+
     private static var defaultTabCoordinator: TabCoordinator {
         #if os(iOS)
-        TabCoordinator {
-            TabItem.contentGroup(provider: DefaultContentGroupProvider())
-            TabItem.search
-            TabItem.media
-        }
+        TabCoordinator(tabs: tabItems(for: Defaults[.Customization.navigationTabs]))
         #else
         TabCoordinator {
             TabItem.contentGroup(provider: DefaultContentGroupProvider())
@@ -121,7 +128,13 @@ struct MainTabView: View {
                 .tabViewStyle(.tabBarOnly)
         }
         #else
-        tabView()
+        if #available(iOS 26, *) {
+            // Collapse the tab bar to just the selected tab while scrolling down
+            tabView()
+                .tabBarMinimizeBehavior(.onScrollDown)
+        } else {
+            tabView()
+        }
         #endif
     }
 
@@ -135,6 +148,11 @@ struct MainTabView: View {
                     await tabCoordinator.route(to: route)
                 }
             }
+            #if os(iOS)
+            .onChange(of: navigationTabs) {
+                tabCoordinator.update(tabs: Self.tabItems(for: navigationTabs))
+            }
+            #endif
             #if os(tvOS)
             .background(alignment: .top) {
                 FocusedPosterCinematicBackgroundView()

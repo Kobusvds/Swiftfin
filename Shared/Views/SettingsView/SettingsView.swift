@@ -121,6 +121,12 @@ struct SettingsView: View {
 
             ColorPicker(L10n.accentColor, selection: $accentColor, supportsOpacity: false)
 
+            #if os(iOS)
+            ChevronButton(L10n.tabBar) {
+                router.route(to: .navigationTabsSettings)
+            }
+            #endif
+
             ChevronButton(L10n.advanced) {
                 router.route(to: .customizeSettingsView)
             }

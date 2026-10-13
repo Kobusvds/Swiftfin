@@ -36,14 +36,33 @@ final class TabCoordinator: ObservableObject {
         }
     }
 
-    let tabs: [TabData]
+    @Published
+    private(set) var tabs: [TabData]
 
-    init(@ArrayBuilder<TabItem> tabs: () -> [TabItem]) {
-        let tabs = tabs()
+    convenience init(@ArrayBuilder<TabItem> tabs: () -> [TabItem]) {
+        self.init(tabs: tabs())
+    }
+
+    init(tabs: [TabItem]) {
         self.tabs = tabs.map { tab in
             (tab, NavigationCoordinator(), TabItemSelectedPublisher())
         }
         self.selectedTabID = tabs.first?.id
+    }
+
+    /// Replaces the tabs, keeping the navigation state of tabs that remain
+    func update(tabs newTabs: [TabItem]) {
+        tabs = newTabs.map { item in
+            if let existing = tabs.first(where: { $0.item.id == item.id }) {
+                (item, existing.coordinator, existing.publisher)
+            } else {
+                (item, NavigationCoordinator(), TabItemSelectedPublisher())
+            }
+        }
+
+        if !tabs.contains(where: { $0.item.id == selectedTabID }) {
+            selectedTabID = tabs.first?.item.id
+        }
     }
 
     func route(to route: NavigationRoute) async {

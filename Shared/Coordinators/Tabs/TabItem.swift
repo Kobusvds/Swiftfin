@@ -102,6 +102,71 @@ extension TabItem {
         }
     }
 
+    static func navigationTab(_ tab: NavigationTab) -> TabItem {
+        switch tab.kind {
+        case .home:
+            let provider = DefaultContentGroupProvider()
+
+            return TabItem(
+                id: tab.id,
+                title: tab.displayTitle,
+                systemImage: tab.systemImage
+            ) {
+                ContentGroupView(provider: provider)
+            }
+
+        case .search:
+            return TabItem(
+                id: tab.id,
+                title: tab.displayTitle,
+                systemImage: tab.systemImage
+            ) {
+                SearchView()
+                    .if(UIDevice.isTV) { view in
+                        view.toolbar(.hidden, for: .navigationBar)
+                    }
+            }
+
+        case .media:
+            return TabItem(
+                id: tab.id,
+                title: tab.displayTitle,
+                systemImage: tab.systemImage
+            ) {
+                PagingLibraryView(library: UserViewLibrary())
+                    .if(UIDevice.isTV) { view in
+                        view.toolbar(.hidden, for: .navigationBar)
+                    }
+            }
+
+        case let .library(id, name, collectionType, itemType):
+            return TabItem(
+                id: tab.id,
+                title: tab.displayTitle,
+                systemImage: tab.systemImage
+            ) {
+                if collectionType == .livetv {
+                    NavigationRoute.liveTV.destination
+                } else {
+                    PagingLibraryView(
+                        library: ItemLibrary(
+                            parent: BaseItemDto(
+                                collectionType: collectionType,
+                                id: id,
+                                name: name,
+                                type: itemType
+                            ),
+                            filters: .default
+                        )
+                    )
+                    .if(UIDevice.isTV) { view in
+                        view.toolbar(.hidden, for: .navigationBar)
+                    }
+                }
+            }
+        }
+    }
+
     static var media: TabItem {
         TabItem(
             id: "media",

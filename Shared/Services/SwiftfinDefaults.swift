@@ -166,6 +166,10 @@ extension Defaults.Keys {
             UserKey("tabBarPlacement", default: .sidebar)
         }
 
+        static var navigationTabs: Key<[NavigationTab]> {
+            UserKey("navigationTabs", default: NavigationTab.defaultTabs)
+        }
+
         enum Poster {
 
             static var configuration: Key<PosterConfiguration> {

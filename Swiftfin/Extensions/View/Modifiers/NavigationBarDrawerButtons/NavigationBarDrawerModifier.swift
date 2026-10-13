@@ -13,6 +13,9 @@ struct NavigationBarFilterDrawerModifier: ViewModifier {
     @FocusState
     private var focusedFilter: FilterTrack.FocusTarget?
 
+    @State
+    private var isHidden = false
+
     @ObservedObject
     var viewModel: FilterViewModel
 
@@ -38,7 +41,14 @@ struct NavigationBarFilterDrawerModifier: ViewModifier {
             if #available(iOS 26, *) {
                 content
                     .safeAreaBar(edge: .top, spacing: 0) {
-                        drawer
+                        // Removing the drawer also collapses the bar area it occupies.
+                        // Scrolling content compensates for the change, see `ScrollDirectionObserver`.
+                        if !isHidden {
+                            drawer
+                        }
+                    }
+                    .onPreferenceChange(IsFilterDrawerHidden.self) { newValue in
+                        isHidden = newValue
                     }
                     .preference(key: IsSafeAreaBarApplied.self, value: true)
             } else {

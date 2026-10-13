@@ -41,6 +41,10 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
     private var focusCoordinator = FocusCoordinator(waitingFor: Focus.firstElement.rawValue)
     @StateObject
     private var gridProxy = CollectionVGridProxy()
+    #if os(iOS)
+    @StateObject
+    private var scrollDirectionObserver = ScrollDirectionObserver()
+    #endif
     @StateObject
     private var viewModel: PagingLibraryViewModel<Library>
 
@@ -158,9 +162,21 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
                 // TODO: CollectionVGrid option instead
                 collectionView.contentInsetAdjustmentBehavior = .never
             }
+            #else
+            .introspect(.scrollView, on: .iOS(.v18...)) { collectionView in
+                scrollDirectionObserver.observe(collectionView)
+            }
+            .onChange(of: contentInsets(for: frame).top) { oldValue, newValue in
+                // Keep items in place when the filter drawer collapses or expands
+                scrollDirectionObserver.compensateForTopInsetChange(newValue - oldValue)
+            }
             #endif
             .ignoresSafeArea()
         }
+        #if os(iOS)
+        // Collapse the filter drawer while scrolling down
+        .preference(key: IsFilterDrawerHidden.self, value: scrollDirectionObserver.isScrollingDown)
+        #endif
         .scrollIndicators(.hidden)
         .withViewContext(.isListRowSeparatorVisible)
         .withViewContext(.isThumb)
