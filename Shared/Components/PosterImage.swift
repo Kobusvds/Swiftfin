@@ -7,6 +7,7 @@
 //
 
 import BlurHashKit
+import JellyfinAPI
 import Nuke
 import SwiftUI
 
@@ -51,37 +52,49 @@ struct PosterImage<Element: Poster>: View {
             AlternateLayoutView {
                 Color.clear
             } content: {
-                ImageView(imageSources)
-                    .pipeline(pipeline)
-                    .image { image in
-                        element.transform(image: image, displayType: displayType)
+                if let item = element as? BaseItemDto, item.type == .boxSet, let collectionID = item.id {
+                    // Collections use a collage of their items' posters, falling back to their own artwork
+                    CollectionPosterCollage(collectionID: collectionID) {
+                        image
                     }
-                    .placeholder { imageSource in
-                        if let blurHash = imageSource.blurHash {
-                            Image(
-                                blurHash: blurHash,
-                                size: .init(width: 8, height: 8)
-                            )?
-                                .resizable()
-                        } else {
-                            SystemImageContentView(
-                                systemName: element.systemImage
-                            )
-                        }
-                    }
-                    .failure {
-                        SystemImageContentView(
-                            systemName: element.systemImage
-                        )
-                    }
-                    .accessibilityRemoveTraits(.isImage)
-                    .accessibilityIgnoresInvertColors()
+                } else {
+                    image
+                }
             }
         }
         .posterStyle(
             displayType,
             contentMode: contentMode
         )
+    }
+
+    @ViewBuilder
+    private var image: some View {
+        ImageView(imageSources)
+            .pipeline(pipeline)
+            .image { image in
+                element.transform(image: image, displayType: displayType)
+            }
+            .placeholder { imageSource in
+                if let blurHash = imageSource.blurHash {
+                    Image(
+                        blurHash: blurHash,
+                        size: .init(width: 8, height: 8)
+                    )?
+                        .resizable()
+                } else {
+                    SystemImageContentView(
+                        systemName: element.systemImage
+                    )
+                }
+            }
+            .failure {
+                SystemImageContentView(
+                    systemName: element.systemImage
+                )
+            }
+            .accessibilityRemoveTraits(.isImage)
+            .accessibilityIgnoresInvertColors()
     }
 }
 
