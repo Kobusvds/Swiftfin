@@ -32,7 +32,8 @@ extension BaseItemDto: LibraryElement {
         in namespace: Namespace.ID
     ) {
         switch type {
-        case .collectionFolder, .folder, .userView:
+        // Collections open as a library of their items
+        case .boxSet, .collectionFolder, .folder, .userView:
             router.route(
                 to: .library(library: ItemLibrary(parent: self, filters: .default)),
                 in: namespace

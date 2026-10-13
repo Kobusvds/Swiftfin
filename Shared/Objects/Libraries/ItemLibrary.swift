@@ -102,6 +102,10 @@ struct ItemLibrary: MediaLibrary, SearchablePagingLibrary, WithRandomElementLibr
                 }
                 .pickerStyle(.menu)
             }
+
+            if parent.type == .boxSet, let collectionID = parent.id {
+                CollectionDisplayModePicker(collectionID: collectionID)
+            }
         }
         .eraseToAnyView()
     }

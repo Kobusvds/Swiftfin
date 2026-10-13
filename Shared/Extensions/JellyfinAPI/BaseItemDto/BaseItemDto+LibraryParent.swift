@@ -82,6 +82,9 @@ extension BaseItemDto: LibraryParent {
 
     func isRecursiveCollection(for grouping: Grouping?) -> Bool {
         guard !isFolderCollection else { return false }
+
+        // Collections list their items directly, without descending into series
+        guard libraryType != .boxSet else { return false }
         guard let collectionType, libraryType != .userView else { return true }
 
         if grouping == .episodes || grouping == .seasons {
