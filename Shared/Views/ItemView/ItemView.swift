@@ -173,13 +173,19 @@ struct ItemView: View {
         #else
         .navigationBarMenuButton(
             isLoading: viewModel.background.is(.refreshing),
-            isHidden: overflow.isEmpty && menu.isEmpty
+            isHidden: overflow.isEmpty && menu.isEmpty && provider.item.type != .boxSet
         ) {
             ItemActionButtons.MenuContent(
                 provider: provider,
                 buttons: overflow,
                 menuButtons: menu
             )
+
+            if provider.item.type == .boxSet, let collectionID = provider.item.id {
+                Divider()
+
+                CollectionDisplayModePicker(collectionID: collectionID)
+            }
         }
         #endif
     }

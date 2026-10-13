@@ -18,6 +18,7 @@ struct ItemLibrary: MediaLibrary, SearchablePagingLibrary, WithRandomElementLibr
 
         var grouping: BaseItemDto.Grouping?
         var filters: ItemFilterCollection
+        var collectionDisplayMode: CollectionDisplayMode = .hideCollection
 
         static let `default`: Self = .init(
             grouping: nil,
@@ -46,7 +47,8 @@ struct ItemLibrary: MediaLibrary, SearchablePagingLibrary, WithRandomElementLibr
 
         self.environment = .init(
             grouping: parent.groupings?.defaultSelection,
-            filters: staticFilters.union(filters)
+            filters: staticFilters.union(filters),
+            collectionDisplayMode: StoredValues[.User.libraryCollectionDisplayMode(parentID: parent.id)]
         )
         self.filterViewModel = .init(
             parent: parent,
@@ -62,7 +64,7 @@ struct ItemLibrary: MediaLibrary, SearchablePagingLibrary, WithRandomElementLibr
                 Picker(
                     selection: environment.map(
                         getter: { $0.grouping },
-                        setter: { .init(grouping: $0, filters: environment.wrappedValue.filters) }
+                        setter: { environment.wrappedValue.mutating(\.grouping, with: $0) }
                     )
                 ) {
                     ForEach(groupings.elements) { grouping in
@@ -75,6 +77,28 @@ struct ItemLibrary: MediaLibrary, SearchablePagingLibrary, WithRandomElementLibr
                     if let grouping = environment.wrappedValue.grouping {
                         Text(grouping.displayTitle)
                     }
+                }
+                .pickerStyle(.menu)
+            }
+
+            if parent.collectionType == .movies || parent.collectionType == .tvshows {
+                Picker(
+                    selection: environment.map(
+                        getter: { $0.collectionDisplayMode },
+                        setter: { newValue in
+                            StoredValues[.User.libraryCollectionDisplayMode(parentID: parent.id)] = newValue
+                            return environment.wrappedValue.mutating(\.collectionDisplayMode, with: newValue)
+                        }
+                    )
+                ) {
+                    ForEach(CollectionDisplayMode.allCases, id: \.self) { mode in
+                        Text(mode.displayTitle)
+                            .tag(mode)
+                    }
+                } label: {
+                    Text("Collections")
+
+                    Text(environment.wrappedValue.collectionDisplayMode.displayTitle)
                 }
                 .pickerStyle(.menu)
             }
@@ -115,10 +139,26 @@ struct ItemLibrary: MediaLibrary, SearchablePagingLibrary, WithRandomElementLibr
         )
         parameters.userID = pageState.userSession.user.id
 
+        let groupsCollections = CollectionGrouping.isSupported(parent: parent, environment: environment) &&
+            CollectionGrouping.hasVisibleCollections(libraryMode: environment.collectionDisplayMode)
+
+        if groupsCollections {
+            parameters.fields = (parameters.fields ?? []) + CollectionGrouping.sortFields
+        }
+
         let request = Paths.getItems(parameters: parameters)
         let response = try await pageState.userSession.client.send(request)
+        let patches = try pageState.items(from: response)
 
-        return try pageState.items(from: response)
+        guard groupsCollections else { return patches }
+
+        return try await CollectionGrouping.apply(
+            to: patches,
+            parent: parent,
+            environment: environment,
+            pageState: pageState,
+            isLastPage: !pageState.progress(returnedCount: patches.count).hasNextPage
+        )
     }
 
     func retrieveRandomElement(
@@ -281,6 +321,9 @@ private struct ItemLibraryBody<Content: View>: View {
     @Router
     private var router
 
+    @StoredValue(.User.collectionDisplayModes)
+    private var collectionDisplayModes
+
     @ObservedObject
     private var viewModel: PagingLibraryViewModel<ItemLibrary>
 
@@ -311,6 +354,10 @@ private struct ItemLibraryBody<Content: View>: View {
             .onChange(of: filterViewModel.currentFilters) {
                 rememberSort(from: filterViewModel.currentFilters)
             }
+            .onChange(of: collectionDisplayModes) {
+                // A collection's display mode was changed from its item view
+                viewModel.refresh()
+            }
             .onReceive(
                 filterViewModel.$currentFilters
                     .map { filterViewModel.staticFilters.union($0) }
@@ -335,7 +382,7 @@ private struct ItemLibraryBody<Content: View>: View {
                 }
             }
             #else
-            .navigationBarFilterDrawer(
+            .libraryFilterHeader(
                 viewModel: filterViewModel,
                 types: filterTypes
             )

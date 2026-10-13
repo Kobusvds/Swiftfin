@@ -43,7 +43,7 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
     private var gridProxy = CollectionVGridProxy()
     #if os(iOS)
     @StateObject
-    private var scrollDirectionObserver = ScrollDirectionObserver()
+    private var headerHost = ScrollViewHeaderHost()
     #endif
     @StateObject
     private var viewModel: PagingLibraryViewModel<Library>
@@ -112,12 +112,15 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
             insets.trailing = frame.safeAreaInsets.trailing
         }
 
+        // Leave room for a header hosted above the items, such as filters
+        insets.top += headerHost.height
+
         return insets
         #endif
     }
 
     @ViewBuilder
-    private var elementsView: some View {
+    private func elementsView(header: AnyView?) -> some View {
         AlternateLayoutView {
             Color.clear
         } content: { frame in
@@ -164,19 +167,16 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
             }
             #else
             .introspect(.scrollView, on: .iOS(.v18...)) { collectionView in
-                scrollDirectionObserver.observe(collectionView)
-            }
-            .onChange(of: contentInsets(for: frame).top) { oldValue, newValue in
-                // Keep items in place when the filter drawer collapses or expands
-                scrollDirectionObserver.compensateForTopInsetChange(newValue - oldValue)
+                // Host the header inside the grid so it scrolls natively with the items
+                if let header {
+                    headerHost.attach(header, to: collectionView)
+                } else {
+                    headerHost.detach()
+                }
             }
             #endif
             .ignoresSafeArea()
         }
-        #if os(iOS)
-        // Collapse the filter drawer while scrolling down
-        .preference(key: IsFilterDrawerHidden.self, value: scrollDirectionObserver.isScrollingDown)
-        #endif
         .scrollIndicators(.hidden)
         .withViewContext(.isListRowSeparatorVisible)
         .withViewContext(.isThumb)
@@ -203,40 +203,80 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
         }
     }
 
+    /// Whether the items grid is showing, which hosts the header itself
+    private var isShowingElements: Bool {
+        viewModel.state == .content &&
+            !(viewModel.isSearchActive && viewModel.background.is(.searching)) &&
+            viewModel.displayedElements.isNotEmpty
+    }
+
+    @ViewBuilder
+    private func content(header: AnyView?) -> some View {
+        ZStack {
+            switch viewModel.state {
+            case .initial, .refreshing:
+                ProgressView()
+                    #if os(tvOS)
+                        .coordinatedFocus(.placeholder)
+                    #endif
+
+            case .content:
+                if viewModel.isSearchActive, viewModel.background.is(.searching) {
+                    ProgressView()
+                } else if viewModel.displayedElements.isEmpty {
+                    ContentUnavailableView(
+                        viewModel.isSearchActive ? L10n.noResults.localizedCapitalized : L10n.noItems.localizedCapitalized,
+                        systemImage: viewModel.isSearchActive ? "magnifyingglass" : "rectangle.on.rectangle.slash"
+                    )
+                    .focusable()
+                    #if os(tvOS)
+                    .coordinatedFocus(.fallback)
+                    #endif
+                } else {
+                    elementsView(header: header)
+                }
+
+            case .error:
+                viewModel.error.map(ErrorView.init)
+                    #if os(tvOS)
+                        .coordinatedFocus(.fallback)
+                    #endif
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            // Without items to scroll with, keep the header visible, such as
+            // so filters that return no items can be changed
+            if !isShowingElements, let header {
+                header
+            }
+        }
+    }
+}
+
+/// Reads the library header from the environment, which is set by a library's body
+/// below `PagingLibraryView`, and carries the environment along for hosting outside SwiftUI
+private struct LibraryHeaderReader<Content: View>: View {
+
+    @Environment(\.libraryHeader)
+    private var header
+    @Environment(\.self)
+    private var environment
+
+    let content: (AnyView?) -> Content
+
+    var body: some View {
+        content(header.map { AnyView($0.environment(\.self, environment)) })
+    }
+}
+
+extension PagingLibraryView {
+
     var body: some View {
         viewModel.library.makeLibraryBody(viewModel: viewModel) {
-            ZStack {
-                switch viewModel.state {
-                case .initial, .refreshing:
-                    ProgressView()
-                        #if os(tvOS)
-                            .coordinatedFocus(.placeholder)
-                        #endif
-
-                case .content:
-                    if viewModel.isSearchActive, viewModel.background.is(.searching) {
-                        ProgressView()
-                    } else if viewModel.displayedElements.isEmpty {
-                        ContentUnavailableView(
-                            viewModel.isSearchActive ? L10n.noResults.localizedCapitalized : L10n.noItems.localizedCapitalized,
-                            systemImage: viewModel.isSearchActive ? "magnifyingglass" : "rectangle.on.rectangle.slash"
-                        )
-                        .focusable()
-                        #if os(tvOS)
-                        .coordinatedFocus(.fallback)
-                        #endif
-                    } else {
-                        elementsView
-                    }
-
-                case .error:
-                    viewModel.error.map(ErrorView.init)
-                        #if os(tvOS)
-                            .coordinatedFocus(.fallback)
-                        #endif
-                }
+            LibraryHeaderReader { header in
+                content(header: header)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .animation(.linear(duration: 0.2), value: viewModel.background.is(.gettingNextPage))
         .animation(.linear(duration: 0.2), value: viewModel.background.is(.searching))
