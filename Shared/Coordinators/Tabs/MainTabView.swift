@@ -17,10 +17,10 @@ struct MainTabView: View {
     #if os(tvOS)
     @Default(.Customization.tabBarPlacement)
     private var tabBarPlacement
-    #else
+    #endif
+
     @Default(.Customization.navigationTabs)
     private var navigationTabs
-    #endif
 
     @InjectedObject(\.userSessionManager)
     private var userSessionManager
@@ -32,35 +32,21 @@ struct MainTabView: View {
         _tabCoordinator = StateObject(wrappedValue: Self.defaultTabCoordinator)
     }
 
-    #if os(iOS)
     /// The user's chosen tabs, falling back to the defaults if none are chosen
     private static func tabItems(for tabs: [NavigationTab]) -> [TabItem] {
-        (tabs.isEmpty ? NavigationTab.defaultTabs : tabs)
+        let items = (tabs.isEmpty ? NavigationTab.defaultTabs : tabs)
             .map(TabItem.navigationTab)
+
+        #if os(tvOS)
+        // tvOS has no settings bar button, so settings is always the last tab
+        return items + [TabItem.settings]
+        #else
+        return items
+        #endif
     }
-    #endif
 
     private static var defaultTabCoordinator: TabCoordinator {
-        #if os(iOS)
         TabCoordinator(tabs: tabItems(for: Defaults[.Customization.navigationTabs]))
-        #else
-        TabCoordinator {
-            TabItem.contentGroup(provider: DefaultContentGroupProvider())
-            TabItem.library(
-                title: L10n.tvShowsCapitalized,
-                systemName: "tv",
-                filters: .init(itemTypes: [.series])
-            )
-            TabItem.library(
-                title: L10n.movies,
-                systemName: "film",
-                filters: .init(itemTypes: [.movie])
-            )
-            TabItem.search
-            TabItem.media
-            TabItem.settings
-        }
-        #endif
     }
 
     private func routePendingDeepLink(_ deepLink: DeepLink?) {
@@ -158,12 +144,13 @@ struct MainTabView: View {
                     await tabCoordinator.route(to: route)
                 }
             }
-            #if os(iOS)
             .onChange(of: navigationTabs) {
                 tabCoordinator.update(tabs: Self.tabItems(for: navigationTabs))
+
+                #if os(iOS)
                 WidgetSync.update(tabs: navigationTabs)
+                #endif
             }
-            #endif
             #if os(tvOS)
             .background(alignment: .top) {
                 FocusedPosterCinematicBackgroundView()

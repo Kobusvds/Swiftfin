@@ -11,6 +11,8 @@ import SwiftUI
 
 struct FilterBarModifier: ViewModifier {
 
+    @Default(.accentColor)
+    private var accentColor
     @Default(.Customization.Library.letterPickerOrientation)
     private var letterPickerOrientation
 
@@ -21,6 +23,11 @@ struct FilterBarModifier: ViewModifier {
     var viewModel: FilterViewModel
 
     let types: [ItemFilterType]
+    /// Library options shown below the filters, such as grouping and collections
+    var menu: AnyView? = nil
+
+    @FocusState
+    private var isMenuFocused: Bool
 
     private var edge: HorizontalEdge {
         letterPickerOrientation == .trailing ? .leading : .trailing
@@ -42,6 +49,14 @@ struct FilterBarModifier: ViewModifier {
                         button
                     }
             }
+
+            if let menu {
+                Color.clear
+                    .frame(width: 64, height: 64)
+                    .overlay(alignment: edge == .leading ? .leading : .trailing) {
+                        menuButton(menu)
+                    }
+            }
         }
         .scrollIfLargerThanContainer()
         .frame(width: 64)
@@ -51,8 +66,47 @@ struct FilterBarModifier: ViewModifier {
         )
     }
 
+    /// Matches the compact filter buttons, showing the title only while focused
+    @ViewBuilder
+    private func menuButton(_ menu: AnyView) -> some View {
+        Menu {
+            menu
+        } label: {
+            HStack(spacing: 12) {
+                if edge == .leading {
+                    menuIcon
+                }
+
+                Text(L10n.options)
+                    .isVisible(isMenuFocused)
+
+                if edge == .trailing {
+                    menuIcon
+                }
+            }
+            .lineLimit(1)
+            .fixedSize()
+            .frame(width: isMenuFocused ? nil : 32, alignment: edge == .leading ? .leading : .trailing)
+        }
+        .focused($isMenuFocused)
+        .fixedSize()
+        .font(.callout)
+        .controlSize(.large)
+        .buttonStyle(.capsule(selectionTint: accentColor, focusTint: .white))
+        .animation(.snappy(duration: 0.2), value: isMenuFocused)
+        .accessibilityLabel(L10n.options)
+    }
+
+    private var menuIcon: some View {
+        Image(systemName: "ellipsis")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: 32, height: 32)
+            .padding(.vertical, 8)
+    }
+
     func body(content: Content) -> some View {
-        if types.isEmpty {
+        if types.isEmpty, menu == nil {
             content
         } else {
             content

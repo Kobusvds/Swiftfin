@@ -76,6 +76,43 @@ struct NavigationTabsSettingsView: View {
             .foregroundStyle(.primary, .secondary)
     }
 
+    #if os(tvOS)
+    /// Moves a tab by the given offset, as the remote can't drag to reorder
+    private func move(_ tab: NavigationTab, by offset: Int) {
+        guard let index = tabs.firstIndex(where: { $0.id == tab.id }) else { return }
+        let destination = index + offset
+
+        guard tabs.indices.contains(destination) else { return }
+        tabs.swapAt(index, destination)
+    }
+
+    @ViewBuilder
+    private func enabledRow(_ tab: NavigationTab) -> some View {
+        ChevronButton {
+            router.route(to: .navigationTabIcon(tab: tab))
+        } label: {
+            tabLabel(tab)
+        }
+        .contextMenu {
+            Button("Move Up", systemImage: "arrow.up") {
+                move(tab, by: -1)
+            }
+            .disabled(tabs.first?.id == tab.id)
+
+            Button("Move Down", systemImage: "arrow.down") {
+                move(tab, by: 1)
+            }
+            .disabled(tabs.last?.id == tab.id)
+
+            // Always keep at least one tab in the navigation
+            if tabs.count > 1 {
+                Button("Remove", systemImage: "minus.circle", role: .destructive) {
+                    tabs.removeAll { $0.id == tab.id }
+                }
+            }
+        }
+    }
+    #else
     @ViewBuilder
     private func enabledRow(_ tab: NavigationTab) -> some View {
         HStack {
@@ -112,6 +149,7 @@ struct NavigationTabsSettingsView: View {
         }
         .buttonStyle(.borderless)
     }
+    #endif
 
     @ViewBuilder
     private func availableRow(_ tab: NavigationTab) -> some View {
@@ -141,7 +179,11 @@ struct NavigationTabsSettingsView: View {
             } header: {
                 Text(L10n.enabled)
             } footer: {
+                #if os(tvOS)
+                Text("Select a tab to change its icon. Press and hold a tab to move or remove it.")
+                #else
                 Text("Tap a tab to change its icon. Tap Edit to change the order.")
+                #endif
             }
 
             Section(L10n.disabled) {
@@ -166,10 +208,12 @@ struct NavigationTabsSettingsView: View {
         }
         .navigationTitle(L10n.tabBar)
         .animation(.linear(duration: 0.2), value: tabs)
+        #if os(iOS)
         .animation(.linear(duration: 0.2), value: editMode?.wrappedValue)
         .toolbar {
             editButton
         }
+        #endif
         .confirmationDialog(
             "Reset to Default",
             isPresented: $isResetConfirmationPresented,
@@ -213,12 +257,22 @@ extension NavigationTabsSettingsView {
                 .prepending(tab.defaultSystemImage, if: !NavigationTab.availableSystemImages.contains(tab.defaultSystemImage))
         }
 
-        private let columns = [GridItem(.adaptive(minimum: 56), spacing: 12)]
+        #if os(tvOS)
+        private let tileSize: CGFloat = 100
+        private let tileSpacing: CGFloat = 30
+        #else
+        private let tileSize: CGFloat = 56
+        private let tileSpacing: CGFloat = 12
+        #endif
+
+        private var columns: [GridItem] {
+            [GridItem(.adaptive(minimum: tileSize), spacing: tileSpacing)]
+        }
 
         var body: some View {
             Form(systemImage: selection) {
                 Section {
-                    LazyVGrid(columns: columns, spacing: 12) {
+                    LazyVGrid(columns: columns, spacing: tileSpacing) {
                         ForEach(symbols, id: \.self) { symbol in
                             Button {
                                 selection = symbol
@@ -226,14 +280,19 @@ extension NavigationTabsSettingsView {
                             } label: {
                                 Image(systemName: symbol)
                                     .font(.title2)
-                                    .frame(width: 56, height: 56)
+                                    .frame(width: tileSize, height: tileSize)
                                     .foregroundStyle(selection == symbol ? Color.white : Color.primary)
                                     .background(
                                         selection == symbol ? Color.accentColor : Color.secondary.opacity(0.15),
                                         in: RoundedRectangle(cornerRadius: 12)
                                     )
                             }
+                            #if os(tvOS)
+                            // Lifts the focused icon so it's clear where the remote is
+                            .buttonStyle(.card)
+                            #else
                             .buttonStyle(.plain)
+                            #endif
                             .accessibilityLabel(symbol)
                             .accessibilityAddTraits(selection == symbol ? .isSelected : [])
                         }

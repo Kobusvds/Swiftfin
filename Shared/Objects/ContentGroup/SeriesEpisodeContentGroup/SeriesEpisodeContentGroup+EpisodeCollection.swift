@@ -127,10 +127,9 @@ extension SeriesEpisodeContentGroup {
             case episodes
         }
 
-        #if os(iOS)
-        @Environment(\.verticalSizeClass)
-        private var verticalSizeClass
-        #endif
+        /// Whether there's room for several episodes, such as an iPhone in landscape
+        @State
+        private var isWide = false
 
         @FocusState
         private var focusedSection: FocusedSection?
@@ -167,7 +166,7 @@ extension SeriesEpisodeContentGroup {
                     columnWidth: 300,
                     rows: 1
                 )
-            } else if verticalSizeClass == .compact {
+            } else if isWide {
                 // iPhone in landscape, show several episodes at once
                 .minimumWidth(
                     columnWidth: 250,
@@ -202,7 +201,12 @@ extension SeriesEpisodeContentGroup {
                 .scrollBehavior(.continuousLeadingEdge)
                 #if os(iOS)
                 // Rebuild the collection when rotating so the new layout applies
-                .id(verticalSizeClass)
+                .id(isWide)
+                .onGeometryChange(for: Bool.self) { proxy in
+                    proxy.size.width >= 600
+                } action: { newValue in
+                    isWide = newValue
+                }
                 #endif
                 .focusSection()
                 .focused($focusedSection, equals: .episodes)

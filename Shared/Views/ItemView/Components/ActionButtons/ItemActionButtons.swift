@@ -121,6 +121,11 @@ struct ItemActionButtons: View {
         }
     }
 
+    /// Collections show their display mode in the bar menu, as tvOS has no navigation bar menu
+    private static func hasCollectionMenu(for provider: ItemContentGroupProvider) -> Bool {
+        UIDevice.isTV && provider.item.type == .boxSet && provider.item.id != nil
+    }
+
     static func resolvedButtons(
         bar: [ItemActionButton],
         menu: [ItemActionButton],
@@ -130,7 +135,7 @@ struct ItemActionButtons: View {
         let bar = availableButtons(bar, for: provider, enabledTrailers: enabledTrailers)
         let menu = availableButtons(menu, for: provider, enabledTrailers: enabledTrailers)
 
-        let hasBarMenu = UIDevice.isTV && (menu.isNotEmpty || bar.count > maximumButtons)
+        let hasBarMenu = UIDevice.isTV && (menu.isNotEmpty || bar.count > maximumButtons || hasCollectionMenu(for: provider))
         let visible = Array(bar.prefix(hasBarMenu ? maximumButtons - 1 : maximumButtons))
         let overflow = Array(bar.dropFirst(visible.count))
 
@@ -172,7 +177,8 @@ struct ItemActionButtons: View {
     }
 
     var body: some View {
-        let hasBarMenu = UIDevice.isTV && (overflowButtons.isNotEmpty || menuButtons.isNotEmpty)
+        let hasCollectionMenu = Self.hasCollectionMenu(for: provider)
+        let hasBarMenu = UIDevice.isTV && (overflowButtons.isNotEmpty || menuButtons.isNotEmpty || hasCollectionMenu)
 
         if showsPlayButton || buttons.isNotEmpty || hasBarMenu {
             HStack(alignment: .center, spacing: UIDevice.isTV ? 24 : 8) {
@@ -194,6 +200,14 @@ struct ItemActionButtons: View {
                             buttons: overflowButtons,
                             menuButtons: menuButtons
                         )
+
+                        if hasCollectionMenu, let collectionID = provider.item.id {
+                            if overflowButtons.isNotEmpty || menuButtons.isNotEmpty {
+                                Divider()
+                            }
+
+                            CollectionDisplayModePicker(collectionID: collectionID)
+                        }
                     } label: {
                         Label(L10n.menu, systemImage: "ellipsis")
                     }

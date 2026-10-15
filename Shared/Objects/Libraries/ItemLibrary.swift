@@ -18,7 +18,7 @@ struct ItemLibrary: MediaLibrary, SearchablePagingLibrary, WithRandomElementLibr
 
         var grouping: BaseItemDto.Grouping?
         var filters: ItemFilterCollection
-        var collectionDisplayMode: CollectionDisplayMode = .hideCollection
+        var collectionDisplayMode: CollectionDisplayMode = .hideItems
 
         static let `default`: Self = .init(
             grouping: nil,
@@ -58,49 +58,59 @@ struct ItemLibrary: MediaLibrary, SearchablePagingLibrary, WithRandomElementLibr
         self.parent = parent
     }
 
+    /// Whether `makeMenuContent` has any options to show
+    var hasMenuContent: Bool {
+        parent.groupings?.elements.isNotEmpty == true ||
+            parent.collectionType == .movies ||
+            parent.collectionType == .tvshows ||
+            (parent.type == .boxSet && parent.id != nil)
+    }
+
     func makeMenuContent(environment: Binding<Environment>) -> AnyView {
         Group {
             if let groupings = parent.groupings, groupings.elements.isNotEmpty {
-                Picker(
-                    selection: environment.map(
-                        getter: { $0.grouping },
-                        setter: { environment.wrappedValue.mutating(\.grouping, with: $0) }
-                    )
-                ) {
-                    ForEach(groupings.elements) { grouping in
-                        Text(grouping.displayTitle)
-                            .tag(grouping as BaseItemDto.Grouping?)
-                    }
-                } label: {
-                    Text(L10n.grouping)
+                MenuPickerSection(L10n.grouping) {
+                    Picker(
+                        selection: environment.map(
+                            getter: { $0.grouping },
+                            setter: { environment.wrappedValue.mutating(\.grouping, with: $0) }
+                        )
+                    ) {
+                        ForEach(groupings.elements) { grouping in
+                            Text(grouping.displayTitle)
+                                .tag(grouping as BaseItemDto.Grouping?)
+                        }
+                    } label: {
+                        Text(L10n.grouping)
 
-                    if let grouping = environment.wrappedValue.grouping {
-                        Text(grouping.displayTitle)
+                        if let grouping = environment.wrappedValue.grouping {
+                            Text(grouping.displayTitle)
+                        }
                     }
                 }
-                .pickerStyle(.menu)
             }
 
             if parent.collectionType == .movies || parent.collectionType == .tvshows {
-                Picker(
-                    selection: environment.map(
-                        getter: { $0.collectionDisplayMode },
-                        setter: { newValue in
-                            StoredValues[.User.libraryCollectionDisplayMode(parentID: parent.id)] = newValue
-                            return environment.wrappedValue.mutating(\.collectionDisplayMode, with: newValue)
+                MenuPickerSection("Collections") {
+                    Picker(
+                        selection: environment.map(
+                            getter: { $0.collectionDisplayMode },
+                            setter: { newValue in
+                                StoredValues[.User.libraryCollectionDisplayMode(parentID: parent.id)] = newValue
+                                return environment.wrappedValue.mutating(\.collectionDisplayMode, with: newValue)
+                            }
+                        )
+                    ) {
+                        ForEach(CollectionDisplayMode.allCases, id: \.self) { mode in
+                            Text(mode.displayTitle)
+                                .tag(mode)
                         }
-                    )
-                ) {
-                    ForEach(CollectionDisplayMode.allCases, id: \.self) { mode in
-                        Text(mode.displayTitle)
-                            .tag(mode)
-                    }
-                } label: {
-                    Text("Collections")
+                    } label: {
+                        Text("Collections")
 
-                    Text(environment.wrappedValue.collectionDisplayMode.displayTitle)
+                        Text(environment.wrappedValue.collectionDisplayMode.displayTitle)
+                    }
                 }
-                .pickerStyle(.menu)
             }
 
             if parent.type == .boxSet, let collectionID = parent.id {
@@ -375,7 +385,11 @@ private struct ItemLibraryBody<Content: View>: View {
             #if os(tvOS)
             .filterBar(
                 viewModel: filterViewModel,
-                types: filterTypes
+                types: filterTypes,
+                // tvOS has no navigation bar menu, so library options live with the filters
+                menu: viewModel.library.hasMenuContent
+                    ? viewModel.library.makeMenuContent(environment: $viewModel.environment)
+                    : nil
             )
             #endif
             .letterPickerBar(filterViewModel: filterViewModel)

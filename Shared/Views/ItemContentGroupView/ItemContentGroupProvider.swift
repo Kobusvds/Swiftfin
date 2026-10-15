@@ -42,6 +42,7 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
                 guard let self, case let .updated(update) = change else { return nil }
 
                 if update.itemID == self.id, update.metadataChanged {
+                    self.logger.warning("[DEBUG-REFRESH] \(self.item.displayTitle) <- metadata of self")
                     return ()
                 }
                 // Series and season playback selection depends on their children's progress
@@ -52,6 +53,9 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
                 if update.itemID == self.id || changedItem?.seriesID == self.id || changedItem?.seasonID == self.id ||
                     changedItem?.type == nil
                 {
+                    self.logger.warning(
+                        "[DEBUG-REFRESH] \(self.item.displayTitle) <- userData of \(update.itemID) type: \(changedItem?.type?.rawValue ?? "nil") name: \(changedItem?.displayTitle ?? "nil")"
+                    )
                     return ()
                 }
                 return nil

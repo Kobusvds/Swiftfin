@@ -181,11 +181,13 @@ class PagingLibraryViewModel<Library: PagingLibrary>: ViewModel, Identifiable {
                     if update.userDataChanged,
                        self.library.shouldRefreshForUserDataChange(environment: self.environment)
                     {
+                        self.logger.warning("[DEBUG-REFRESH] library \(self.library.parent.displayTitle) <- userData of \(update.itemID)")
                         self.reconcileMembership(withID: update.itemID)
                         self.scheduleRefreshForStoreChange()
                     }
 
                 case .libraryChanged:
+                    self.logger.warning("[DEBUG-REFRESH] library \(self.library.parent.displayTitle) <- libraryChanged")
                     // TODO: determine if always safe
                     self.scheduleRefreshForStoreChange()
 

@@ -15,12 +15,14 @@ extension View {
     @ViewBuilder
     func filterBar(
         viewModel: FilterViewModel,
-        types: [ItemFilterType]
+        types: [ItemFilterType],
+        menu: AnyView? = nil
     ) -> some View {
         modifier(
             FilterBarModifier(
                 viewModel: viewModel,
-                types: types
+                types: types,
+                menu: menu
             )
         )
     }

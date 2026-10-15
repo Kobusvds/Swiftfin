@@ -44,7 +44,7 @@ extension StoredValues.Keys.User {
         StoredValues.Keys.CurrentUserKey(
             parentID,
             field: "setting-libraryCollectionDisplayMode",
-            default: .hideCollection
+            default: .hideItems
         )
     }
 
