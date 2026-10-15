@@ -128,6 +128,8 @@ extension ItemView {
                                 (location: 0, opacity: 0)
                                 (location: 1, opacity: 1)
                             }
+                            // Reach the screen edges in landscape, past the side safe areas
+                            .ignoresSafeArea(edges: .horizontal)
                     }
                 #endif
             }

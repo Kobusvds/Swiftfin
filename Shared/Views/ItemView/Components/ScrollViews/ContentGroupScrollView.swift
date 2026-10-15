@@ -85,6 +85,9 @@ extension ItemView {
                     ContentGroupVStack(groups: groups)
                         .edgePadding(.bottom)
                         .padding(.top, isEnhanced ? 0 : tabSafeAreaInsets.top)
+                        #if os(iOS)
+                        .dynamicIslandBodyInset()
+                        #endif
                 }
                 .trackingFrame(for: .scrollView)
                 #if os(tvOS)

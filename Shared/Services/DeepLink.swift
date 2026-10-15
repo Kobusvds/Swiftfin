@@ -13,6 +13,9 @@ struct DeepLink: Equatable {
     enum Destination: Equatable {
         case item(id: String)
 
+        /// A main navigation tab, identified by `NavigationTab.id`
+        case tab(id: String)
+
         // TODO: able to launch library by ID without item pre-retrieval?
 //        case library(id: String)
     }
@@ -23,20 +26,30 @@ struct DeepLink: Equatable {
 
     init?(_ url: URL) {
         guard let match = url.absoluteString.wholeMatch(
-            of: /^(?:swiftfin|jellyfin):\/\/(?<serverID>[A-Za-z0-9-]+)\/(?<userID>[A-Za-z0-9-]+)\/(?<destinationType>item|library)\/(?<destinationID>[A-Za-z0-9-]+)\/?$/
+            of: /^(?:swiftfin|jellyfin):\/\/(?<serverID>[A-Za-z0-9-]+)\/(?<userID>[A-Za-z0-9-]+)\/(?<destinationType>item|library|tab)\/(?<destinationID>[A-Za-z0-9-]+)\/?$/
         ) else { return nil }
 
         self.serverID = String(match.output.serverID)
         self.userID = String(match.output.userID)
 
-        self.destination = .item(id: String(match.output.destinationID))
+        let destinationID = String(match.output.destinationID)
+
+        switch match.output.destinationType {
+        case "tab":
+            self.destination = .tab(id: destinationID)
+        default:
+            self.destination = .item(id: destinationID)
+        }
     }
 
+    /// The route to push, or `nil` if the destination isn't a pushed route
     @MainActor
-    func route() -> NavigationRoute {
+    func route() -> NavigationRoute? {
         switch destination {
         case let .item(id):
             .item(id: id)
+        case .tab:
+            nil
 //        case let .library(id):
 //            let library = try await getItem(id: id, userSession: session)
 //            return .library(viewModel: ItemLibraryViewModel(parent: library))

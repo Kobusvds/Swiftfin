@@ -10,6 +10,9 @@ import SwiftUI
 
 struct ContentGroupVStack: View {
 
+    @Environment(\.contentGroupBodyLeadingInset)
+    private var bodyLeadingInset
+
     let groups: [any ContentGroup]
 
     private var spacing: CGFloat {
@@ -30,9 +33,18 @@ struct ContentGroupVStack: View {
             ForEach(groups, id: \.id) { group in
                 makeGroupBody(group)
                     .eraseToAnyView()
+                    // Headers stay edge to edge
+                    .padding(.leading, group.id == ItemView.Component.header ? 0 : bodyLeadingInset)
                     .coordinatedFocus(group.id)
             }
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
     }
+}
+
+extension EnvironmentValues {
+
+    /// Extra leading padding for content groups other than headers, such as to avoid the Dynamic Island
+    @Entry
+    var contentGroupBodyLeadingInset: CGFloat = 0
 }

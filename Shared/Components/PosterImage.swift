@@ -44,6 +44,17 @@ struct PosterImage<Element: Poster>: View {
         )
     }
 
+    /// The item being shown, looking through type erased and shared wrappers
+    private var baseItem: BaseItemDto? {
+        let poster: any Poster = (element as? AnyPoster)?._poster ?? element
+
+        if let item = poster as? BaseItemDto {
+            return item
+        }
+
+        return (poster as? ItemEntry)?.value
+    }
+
     var body: some View {
         ZStack {
             Rectangle()
@@ -52,7 +63,7 @@ struct PosterImage<Element: Poster>: View {
             AlternateLayoutView {
                 Color.clear
             } content: {
-                if let item = element as? BaseItemDto, item.type == .boxSet, let collectionID = item.id {
+                if let item = baseItem, item.type == .boxSet, let collectionID = item.id {
                     // Collections use a collage of their items' posters, falling back to their own artwork
                     CollectionPosterCollage(collectionID: collectionID) {
                         image

@@ -65,9 +65,25 @@ final class TabCoordinator: ObservableObject {
         }
     }
 
+    /// Selects the tab with the given ID, showing its root
+    func select(tabID: String) {
+        guard let tab = tabs.first(where: { $0.item.id == tabID }) else { return }
+
+        tab.coordinator.presentedSheet = nil
+        tab.coordinator.path.removeAll()
+        selectedTabID = tabID
+    }
+
     func route(to route: NavigationRoute) async {
         guard let tab = tabs.first(where: { $0.item.id == selectedTabID }) else { return }
 
         tab.coordinator.push(route)
     }
+}
+
+extension EnvironmentValues {
+
+    /// The main tabs coordinator, if the view is within the main tabs
+    @Entry
+    var tabCoordinator: TabCoordinator? = nil
 }

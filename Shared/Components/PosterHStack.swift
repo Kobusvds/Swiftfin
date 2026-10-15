@@ -13,10 +13,26 @@ struct PosterHStack<
     Data: Collection
 >: View where Data.Element: Poster, Data.Index == Int {
 
+    #if os(iOS)
+    @Environment(\.verticalSizeClass)
+    private var verticalSizeClass
+    #endif
+
     let elements: Data
     let displayType: PosterDisplayType
     let size: PosterDisplayType.Size
     let action: (Data.Element, Namespace.ID) -> Void
+
+    /// Wide posters on an iPhone in landscape need more room between them to read as separate items
+    private var itemSpacing: CGFloat {
+        #if os(iOS)
+        if UIDevice.isPhone, verticalSizeClass == .compact, displayType == .landscape {
+            return EdgeInsets.itemSpacing * 2
+        }
+        #endif
+
+        return EdgeInsets.itemSpacing
+    }
 
     private var layout: CollectionHStackLayout {
         #if os(tvOS)
@@ -26,7 +42,8 @@ struct PosterHStack<
             columnTrailingInset: 0
         )
         #else
-        if UIDevice.isPad {
+        // iPhones in landscape are wide enough to size posters like iPad
+        if UIDevice.isPad || verticalSizeClass == .compact {
             let minWidth: CGFloat = {
                 switch (displayType, size) {
                 case (.landscape, .small):
@@ -84,8 +101,12 @@ struct PosterHStack<
         }
         .clipsToBounds(false)
         .insets(horizontal: EdgeInsets.edgePadding)
-        .itemSpacing(EdgeInsets.itemSpacing)
+        .itemSpacing(itemSpacing)
         .scrollBehavior(.continuousLeadingEdge)
+        #if os(iOS)
+        // Rebuild the collection when rotating so the new layout applies
+        .id(verticalSizeClass)
+        #endif
         .withViewContext(.isThumb)
     }
 }

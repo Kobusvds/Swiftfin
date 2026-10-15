@@ -204,6 +204,11 @@ final class UserSessionManager: ObservableObject {
     @MainActor
     func appDidEnterBackground() {
         Defaults[.backgroundTimeStamp] = Date.now
+
+        #if os(iOS)
+        // Refresh widgets with any playback progress and server address changes
+        WidgetSync.update(session: currentSession)
+        #endif
     }
 
     @MainActor
@@ -351,6 +356,10 @@ final class UserSessionManager: ObservableObject {
         }
 
         newSession?.didStart()
+
+        #if os(iOS)
+        WidgetSync.update(session: newSession)
+        #endif
     }
 
     private func resolveStoredSession() throws -> UserSession? {

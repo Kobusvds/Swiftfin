@@ -67,8 +67,11 @@ struct MainTabView: View {
         guard let deepLink else { return }
 
         Task { @MainActor in
-            let route = deepLink.route()
-            await tabCoordinator.route(to: route)
+            if case let .tab(id) = deepLink.destination {
+                tabCoordinator.select(tabID: id)
+            } else if let route = deepLink.route() {
+                await tabCoordinator.route(to: route)
+            }
         }
     }
 
@@ -77,14 +80,13 @@ struct MainTabView: View {
         NavigationInjectionView(coordinator: tab.coordinator) {
             tab.item.content
                 #if os(iOS)
-                    .if(tabCoordinator.tabs.first?.item.id == tab.item.id) { view in
-                        view.topBarTrailing {
-                            FirstTabSettingsBarButton()
-                        }
+                    .topBarTrailing {
+                        TabRootSettingsBarButton()
                     }
                 #endif
         }
         .environmentObject(tabCoordinator)
+        .environment(\.tabCoordinator, tabCoordinator)
         .environment(\.tabItemSelected, tab.publisher)
     }
 
@@ -140,6 +142,14 @@ struct MainTabView: View {
 
     var body: some View {
         tabContent()
+            .onAppear {
+                // A deep link that signed in a user is set before this view exists
+                routePendingDeepLink(userSessionManager.consumePendingDeepLink())
+
+                #if os(iOS)
+                WidgetSync.update(tabs: navigationTabs)
+                #endif
+            }
             .onChange(of: userSessionManager.pendingDeepLink) {
                 routePendingDeepLink(userSessionManager.consumePendingDeepLink())
             }
@@ -151,6 +161,7 @@ struct MainTabView: View {
             #if os(iOS)
             .onChange(of: navigationTabs) {
                 tabCoordinator.update(tabs: Self.tabItems(for: navigationTabs))
+                WidgetSync.update(tabs: navigationTabs)
             }
             #endif
             #if os(tvOS)
@@ -162,7 +173,7 @@ struct MainTabView: View {
 }
 
 #if os(iOS)
-private struct FirstTabSettingsBarButton: View {
+private struct TabRootSettingsBarButton: View {
 
     @Injected(\.currentUserSession)
     private var userSession

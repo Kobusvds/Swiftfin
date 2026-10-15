@@ -31,15 +31,20 @@ extension ItemView {
         let groups: [any ContentGroup]
 
         var body: some View {
-            ScrollView {
-                ContentGroupVStack(groups: groups)
-                    .edgePadding(.bottom)
-            }
-            .ignoresSafeArea(edges: .horizontal)
-            .scrollIndicators(.hidden)
-            .backport
-            .scrollEdgeEffectStyle(.soft, for: .top)
-            .overlay(alignment: .top) {
+            // The ZStack itself ignores the horizontal safe area so both the
+            // scroll content and the blur span the full screen width in landscape
+            ZStack(alignment: .top) {
+                ScrollView {
+                    ContentGroupVStack(groups: groups)
+                        .edgePadding(.bottom)
+                        #if os(iOS)
+                        .dynamicIslandBodyInset()
+                        #endif
+                }
+                .scrollIndicators(.hidden)
+                .backport
+                .scrollEdgeEffectStyle(.soft, for: .top)
+
                 Rectangle()
                     .fill(Material.ultraThin)
                     .mask(gradient: .eased(.smootherstep)) {
@@ -58,6 +63,7 @@ extension ItemView {
                     .allowsHitTesting(false)
                     .accessibilityHidden(true)
             }
+            .ignoresSafeArea(edges: .horizontal)
         }
     }
 }

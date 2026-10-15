@@ -127,6 +127,11 @@ extension SeriesEpisodeContentGroup {
             case episodes
         }
 
+        #if os(iOS)
+        @Environment(\.verticalSizeClass)
+        private var verticalSizeClass
+        #endif
+
         @FocusState
         private var focusedSection: FocusedSection?
         @FocusState
@@ -149,7 +154,7 @@ extension SeriesEpisodeContentGroup {
             self.content = content
         }
 
-        private static var layout: CollectionHStackLayout {
+        private var layout: CollectionHStackLayout {
             #if os(tvOS)
             .grid(
                 columns: 3.5,
@@ -160,6 +165,12 @@ extension SeriesEpisodeContentGroup {
             if UIDevice.isPad {
                 .minimumWidth(
                     columnWidth: 300,
+                    rows: 1
+                )
+            } else if verticalSizeClass == .compact {
+                // iPhone in landscape, show several episodes at once
+                .minimumWidth(
+                    columnWidth: 250,
                     rows: 1
                 )
             } else {
@@ -176,7 +187,7 @@ extension SeriesEpisodeContentGroup {
             ContentGroupSection {
                 CollectionHStack(
                     uniqueElements: elements,
-                    layout: Self.layout
+                    layout: layout
                 ) { element in
                     content(element)
                         .focused($focusedElement, equals: element.id)
@@ -189,6 +200,10 @@ extension SeriesEpisodeContentGroup {
                 .insets(horizontal: EdgeInsets.edgePadding)
                 .itemSpacing(EdgeInsets.itemSpacing)
                 .scrollBehavior(.continuousLeadingEdge)
+                #if os(iOS)
+                // Rebuild the collection when rotating so the new layout applies
+                .id(verticalSizeClass)
+                #endif
                 .focusSection()
                 .focused($focusedSection, equals: .episodes)
                 .defaultFocus(

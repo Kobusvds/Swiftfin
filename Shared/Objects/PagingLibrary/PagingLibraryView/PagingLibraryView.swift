@@ -27,6 +27,10 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
 
     @Environment(\.tabSafeAreaInsets)
     private var tabSafeAreaInsets
+    #if os(iOS)
+    @Environment(\.verticalSizeClass)
+    private var verticalSizeClass
+    #endif
 
     @Namespace
     private var namespace
@@ -36,6 +40,8 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
 
     @State
     private var isSafeAreaBarApplied: Bool = false
+    @State
+    private var coverFlowIndex: Int = 0
 
     @StateObject
     private var focusCoordinator = FocusCoordinator(waitingFor: Focus.firstElement.rawValue)
@@ -187,6 +193,53 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
         }
     }
 
+    #if os(iOS)
+    /// Covers for the elements that have posters
+    private var coverFlowCovers: [CoverFlowCover] {
+        viewModel.displayedElements.compactMap { element in
+            guard let poster = element as? any Poster else { return nil }
+
+            return CoverFlowCover(
+                id: AnyHashable(element.id),
+                poster: AnyPoster(poster)
+            ) {
+                element.libraryDidSelectElement(router: router, in: namespace)
+            }
+        }
+    }
+
+    /// iPhones in landscape show Cover Flow instead of the grid
+    private var isCoverFlowActive: Bool {
+        UIDevice.isPhone && verticalSizeClass == .compact
+    }
+
+    /// Whether Cover Flow is on screen, which replaces the navigation bar with its own controls
+    private var isShowingCoverFlow: Bool {
+        isCoverFlowActive && isShowingElements && viewModel.displayedElements.first is any Poster
+    }
+
+    @ViewBuilder
+    private func coverFlowView(covers: [CoverFlowCover]) -> some View {
+        CoverFlowView(
+            covers: covers,
+            displayType: libraryStyle.posterDisplayType,
+            selectedIndex: $coverFlowIndex
+        ) {
+            if viewModel.isSearchActive {
+                viewModel.getNextSearchPage()
+            } else {
+                viewModel.getNextPage()
+            }
+        } leading: {
+            CoverFlowLibraryControls()
+        } trailing: {
+            CoverFlowAccountControls {
+                menuContent
+            }
+        }
+    }
+    #endif
+
     @ViewBuilder
     private var menuContent: some View {
         if isLibraryStyleSectionVisible {
@@ -233,7 +286,17 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
                     .coordinatedFocus(.fallback)
                     #endif
                 } else {
+                    #if os(iOS)
+                    let covers = isCoverFlowActive ? coverFlowCovers : []
+
+                    if covers.isNotEmpty {
+                        coverFlowView(covers: covers)
+                    } else {
+                        elementsView(header: header)
+                    }
+                    #else
                     elementsView(header: header)
+                    #endif
                 }
 
             case .error:
@@ -288,7 +351,10 @@ extension PagingLibraryView {
             isSafeAreaBarApplied = newValue
         }
         #if os(iOS)
-        .toolbarTitleDisplayMode(router.isRootOfPath ? .inlineLarge : .inline)
+        .toolbarTitleDisplayMode(router.isRootOfPath && !isCoverFlowActive ? .inlineLarge : .inline)
+        // Give Cover Flow the full height of the landscape screen, it shows its own controls
+        .toolbar(isCoverFlowActive ? .hidden : .automatic, for: .tabBar)
+        .toolbar(isShowingCoverFlow ? .hidden : .automatic, for: .navigationBar)
         #endif
         .onChange(of: viewModel.environment) {
             viewModel.refreshForEnvironmentChange()
