@@ -43,8 +43,14 @@ struct NavigationInjectionView: View {
     var body: some View {
         NavigationStack(path: $coordinator.path) {
             content
+                #if os(iOS)
+                .macWindowControlsNavigationInset()
+                #endif
                 .navigationDestination(for: NavigationRoute.self) { route in
                     route.destination
+                        #if os(iOS)
+                        .macWindowControlsNavigationInset()
+                        #endif
                         .environment(
                             \.router,
                             .init(

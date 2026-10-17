@@ -1,0 +1,169 @@
+{
+  "fill-specializations": [
+    {
+      "value": {
+        "linear-gradient": [
+          "srgb:0.22745,0.05490,0.36863,1.00000",
+          "srgb:0.62745,0.18824,0.49804,1.00000"
+        ],
+        "orientation": {
+          "start": {
+            "x": 0.5,
+            "y": 0.0
+          },
+          "stop": {
+            "x": 0.5,
+            "y": 1.0
+          }
+        }
+      }
+    },
+    {
+      "appearance": "dark",
+      "value": {
+        "linear-gradient": [
+          "srgb:0.08627,0.01961,0.12157,1.00000",
+          "srgb:0.23922,0.05882,0.27059,1.00000"
+        ],
+        "orientation": {
+          "start": {
+            "x": 0.5,
+            "y": 0.0
+          },
+          "stop": {
+            "x": 0.5,
+            "y": 1.0
+          }
+        }
+      }
+    }
+  ],
+  "groups": [
+    {
+      "name": "Glyph",
+      "layers": [
+        {
+          "image-name": "1-N.svg",
+          "name": "1-N",
+          "glass": true,
+          "fill-specializations": [
+            {
+              "value": {
+                "linear-gradient": [
+                  "srgb:1.00000,0.94118,0.96863,1.00000",
+                  "srgb:1.00000,0.54902,0.77647,1.00000"
+                ],
+                "orientation": {
+                  "start": {
+                    "x": 0.5,
+                    "y": 0.22
+                  },
+                  "stop": {
+                    "x": 0.5,
+                    "y": 0.78
+                  }
+                }
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "linear-gradient": [
+                  "srgb:1.00000,0.89020,0.94510,1.00000",
+                  "srgb:1.00000,0.43529,0.70980,1.00000"
+                ],
+                "orientation": {
+                  "start": {
+                    "x": 0.5,
+                    "y": 0.22
+                  },
+                  "stop": {
+                    "x": 0.5,
+                    "y": 0.78
+                  }
+                }
+              }
+            },
+            {
+              "appearance": "tinted",
+              "value": {
+                "solid": "extended-gray:1.00000,1.00000"
+              }
+            }
+          ],
+          "opacity-specializations": [
+            {
+              "value": 1.0
+            },
+            {
+              "appearance": "tinted",
+              "value": 1
+            }
+          ]
+        }
+      ],
+      "shadow": {
+        "kind": "layer-color",
+        "opacity": 0.8
+      },
+      "specular": true
+    },
+    {
+      "name": "Petals",
+      "layers": [
+        {
+          "image-name": "3-Stars.svg",
+          "name": "3-Stars",
+          "glass": true,
+          "fill-specializations": [
+            {
+              "appearance": "tinted",
+              "value": {
+                "solid": "extended-gray:0.60000,1.00000"
+              }
+            }
+          ],
+          "opacity-specializations": [
+            {
+              "value": 0.6
+            },
+            {
+              "appearance": "tinted",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "image-name": "2-Petals.svg",
+          "name": "2-Petals",
+          "glass": true,
+          "fill-specializations": [
+            {
+              "appearance": "tinted",
+              "value": {
+                "solid": "extended-gray:0.70000,1.00000"
+              }
+            }
+          ],
+          "opacity-specializations": [
+            {
+              "value": 1.0
+            },
+            {
+              "appearance": "tinted",
+              "value": 1
+            }
+          ]
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.3
+      },
+      "specular": true
+    }
+  ],
+  "supported-platforms": {
+    "squares": "shared"
+  }
+}

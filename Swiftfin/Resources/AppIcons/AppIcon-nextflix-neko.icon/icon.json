@@ -1,0 +1,178 @@
+{
+  "fill-specializations": [
+    {
+      "value": {
+        "linear-gradient": [
+          "srgb:1.00000,0.57255,0.74902,1.00000",
+          "srgb:1.00000,0.70588,0.54902,1.00000"
+        ],
+        "orientation": {
+          "start": {
+            "x": 0.5,
+            "y": 0.0
+          },
+          "stop": {
+            "x": 0.5,
+            "y": 1.0
+          }
+        }
+      }
+    },
+    {
+      "appearance": "dark",
+      "value": {
+        "linear-gradient": [
+          "srgb:0.18039,0.05882,0.14510,1.00000",
+          "srgb:0.29020,0.12549,0.14902,1.00000"
+        ],
+        "orientation": {
+          "start": {
+            "x": 0.5,
+            "y": 0.0
+          },
+          "stop": {
+            "x": 0.5,
+            "y": 1.0
+          }
+        }
+      }
+    }
+  ],
+  "groups": [
+    {
+      "name": "Glyph",
+      "layers": [
+        {
+          "image-name": "3-InnerEars.svg",
+          "name": "3-InnerEars",
+          "glass": false,
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "srgb:1.00000,0.56078,0.70588,1.00000"
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "solid": "srgb:1.00000,0.43529,0.62745,1.00000"
+              }
+            },
+            {
+              "appearance": "tinted",
+              "value": {
+                "solid": "extended-gray:0.55000,1.00000"
+              }
+            }
+          ],
+          "opacity-specializations": [
+            {
+              "value": 1.0
+            },
+            {
+              "appearance": "tinted",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "image-name": "2-NekoN.svg",
+          "name": "2-NekoN",
+          "glass": true,
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "srgb:1.00000,1.00000,1.00000,1.00000"
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "linear-gradient": [
+                  "srgb:1.00000,0.76078,0.86275,1.00000",
+                  "srgb:1.00000,0.78824,0.65098,1.00000"
+                ],
+                "orientation": {
+                  "start": {
+                    "x": 0.5,
+                    "y": 0.12
+                  },
+                  "stop": {
+                    "x": 0.5,
+                    "y": 0.82
+                  }
+                }
+              }
+            },
+            {
+              "appearance": "tinted",
+              "value": {
+                "solid": "extended-gray:1.00000,1.00000"
+              }
+            }
+          ],
+          "opacity-specializations": [
+            {
+              "value": 1.0
+            },
+            {
+              "appearance": "tinted",
+              "value": 1
+            }
+          ]
+        }
+      ],
+      "shadow": {
+        "kind": "layer-color",
+        "opacity": 0.5
+      },
+      "specular": true
+    },
+    {
+      "name": "Whiskers",
+      "layers": [
+        {
+          "image-name": "1-Whiskers.svg",
+          "name": "1-Whiskers",
+          "glass": true,
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "srgb:1.00000,1.00000,1.00000,1.00000"
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "solid": "srgb:1.00000,0.70196,0.81961,1.00000"
+              }
+            },
+            {
+              "appearance": "tinted",
+              "value": {
+                "solid": "extended-gray:0.80000,1.00000"
+              }
+            }
+          ],
+          "opacity-specializations": [
+            {
+              "value": 0.9
+            },
+            {
+              "appearance": "tinted",
+              "value": 1
+            }
+          ]
+        }
+      ],
+      "shadow": {
+        "kind": "none",
+        "opacity": 0
+      },
+      "specular": false
+    }
+  ],
+  "supported-platforms": {
+    "squares": "shared"
+  }
+}

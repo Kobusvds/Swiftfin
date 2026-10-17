@@ -60,7 +60,9 @@ struct ItemLibrary: MediaLibrary, SearchablePagingLibrary, WithRandomElementLibr
 
     /// Whether `makeMenuContent` has any options to show
     var hasMenuContent: Bool {
-        parent.groupings?.elements.isNotEmpty == true ||
+        Defaults[.Customization.Library.enabledDrawerFilters]
+            .contains { !filterViewModel.staticFilters.containsFilters(ofType: $0) } ||
+            parent.groupings?.elements.isNotEmpty == true ||
             parent.collectionType == .movies ||
             parent.collectionType == .tvshows ||
             (parent.type == .boxSet && parent.id != nil)
@@ -68,6 +70,8 @@ struct ItemLibrary: MediaLibrary, SearchablePagingLibrary, WithRandomElementLibr
 
     func makeMenuContent(environment: Binding<Environment>) -> AnyView {
         Group {
+            LibraryFilterMenu(viewModel: filterViewModel)
+
             if let groupings = parent.groupings, groupings.elements.isNotEmpty {
                 MenuPickerSection(L10n.grouping) {
                     Picker(
@@ -329,9 +333,6 @@ struct ItemLibrary: MediaLibrary, SearchablePagingLibrary, WithRandomElementLibr
 
 private struct ItemLibraryBody<Content: View>: View {
 
-    @Default(.Customization.Library.enabledDrawerFilters)
-    private var enabledDrawerFilters
-
     @Router
     private var router
 
@@ -343,10 +344,6 @@ private struct ItemLibraryBody<Content: View>: View {
 
     private let content: Content
     private let filterViewModel: FilterViewModel
-
-    private var filterTypes: [ItemFilterType] {
-        enabledDrawerFilters.filter { !filterViewModel.staticFilters.containsFilters(ofType: $0) }
-    }
 
     init(
         filterViewModel: FilterViewModel,
@@ -382,16 +379,6 @@ private struct ItemLibraryBody<Content: View>: View {
 
                 viewModel.environment.filters = filters
             }
-            #if os(tvOS)
-            .filterBar(
-                viewModel: filterViewModel,
-                types: filterTypes,
-                // tvOS has no navigation bar menu, so library options live with the filters
-                menu: viewModel.library.hasMenuContent
-                    ? viewModel.library.makeMenuContent(environment: $viewModel.environment)
-                    : nil
-            )
-            #endif
             .letterPickerBar(filterViewModel: filterViewModel)
             #if os(tvOS)
             .background(alignment: .top) {
@@ -399,11 +386,6 @@ private struct ItemLibraryBody<Content: View>: View {
                     FocusedPosterCinematicBackgroundView()
                 }
             }
-            #else
-            .libraryFilterHeader(
-                viewModel: filterViewModel,
-                types: filterTypes
-            )
             #endif
     }
 

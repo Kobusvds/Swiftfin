@@ -13,6 +13,9 @@ struct DeepLink: Equatable {
     enum Destination: Equatable {
         case item(id: String)
 
+        /// Starts playback of an item
+        case play(id: String)
+
         /// A main navigation tab, identified by `NavigationTab.id`
         case tab(id: String)
 
@@ -26,7 +29,7 @@ struct DeepLink: Equatable {
 
     init?(_ url: URL) {
         guard let match = url.absoluteString.wholeMatch(
-            of: /^(?:swiftfin|jellyfin):\/\/(?<serverID>[A-Za-z0-9-]+)\/(?<userID>[A-Za-z0-9-]+)\/(?<destinationType>item|library|tab)\/(?<destinationID>[A-Za-z0-9-]+)\/?$/
+            of: /^(?:swiftfin|jellyfin):\/\/(?<serverID>[A-Za-z0-9-]+)\/(?<userID>[A-Za-z0-9-]+)\/(?<destinationType>item|library|play|tab)\/(?<destinationID>[A-Za-z0-9-]+)\/?$/
         ) else { return nil }
 
         self.serverID = String(match.output.serverID)
@@ -37,6 +40,8 @@ struct DeepLink: Equatable {
         switch match.output.destinationType {
         case "tab":
             self.destination = .tab(id: destinationID)
+        case "play":
+            self.destination = .play(id: destinationID)
         default:
             self.destination = .item(id: destinationID)
         }
@@ -48,7 +53,7 @@ struct DeepLink: Equatable {
         switch destination {
         case let .item(id):
             .item(id: id)
-        case .tab:
+        case .play, .tab:
             nil
 //        case let .library(id):
 //            let library = try await getItem(id: id, userSession: session)

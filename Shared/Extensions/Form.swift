@@ -21,7 +21,7 @@ func Form(
     @ViewBuilder content: @escaping () -> some View
 ) -> some View {
     PlatformForm(content: content) {
-        Image(systemName: systemImage)
+        Image(symbol: systemImage)
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(maxWidth: 400)

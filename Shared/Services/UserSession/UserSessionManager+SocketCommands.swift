@@ -184,11 +184,13 @@ extension UserSessionManager {
         }
     }
 
+    /// - Parameter queuesEpisodes: Whether the following episodes of a series play next
     @MainActor
-    private func playItem(
+    func playItem(
         id: String,
         mediaSourceID: String? = nil,
         startPositionTicks: Int? = nil,
+        queuesEpisodes: Bool = false,
         userSession: UserSession
     ) {
         Task { @MainActor in
@@ -218,7 +220,10 @@ extension UserSessionManager {
                 if hasActivePlayback, let mediaPlayerManager {
                     await mediaPlayerManager.playNewItem(provider: provider)
                 } else {
-                    routePublisher.send(.videoPlayer(provider: provider))
+                    let queue: (any MediaPlayerQueue)? = queuesEpisodes && provider.item.type == .episode ?
+                        EpisodeMediaPlayerQueue(episode: provider.item) : nil
+
+                    routePublisher.send(.videoPlayer(provider: provider, queue: queue))
                 }
             } catch {
                 logger.error(

@@ -1,0 +1,161 @@
+{
+  "fill-specializations": [
+    {
+      "value": {
+        "linear-gradient": [
+          "srgb:1.00000,1.00000,1.00000,1.00000",
+          "srgb:0.96863,0.93333,0.96078,1.00000"
+        ],
+        "orientation": {
+          "start": {
+            "x": 0.5,
+            "y": 0.0
+          },
+          "stop": {
+            "x": 0.5,
+            "y": 1.0
+          }
+        }
+      }
+    },
+    {
+      "appearance": "dark",
+      "value": {
+        "linear-gradient": [
+          "srgb:0.11765,0.07843,0.14118,1.00000",
+          "srgb:0.18039,0.10196,0.21176,1.00000"
+        ],
+        "orientation": {
+          "start": {
+            "x": 0.5,
+            "y": 0.0
+          },
+          "stop": {
+            "x": 0.5,
+            "y": 1.0
+          }
+        }
+      }
+    }
+  ],
+  "groups": [
+    {
+      "name": "Ribbons",
+      "layers": [
+        {
+          "image-name": "3-Purple.svg",
+          "name": "3-Purple",
+          "glass": true,
+          "fill-specializations": [
+            {
+              "appearance": "tinted",
+              "value": {
+                "solid": "extended-gray:0.75000,1.00000"
+              }
+            }
+          ],
+          "opacity-specializations": [
+            {
+              "value": 0.95
+            },
+            {
+              "appearance": "tinted",
+              "value": 1
+            }
+          ],
+          "blend-mode-specializations": [
+            {
+              "value": "multiply"
+            },
+            {
+              "appearance": "dark",
+              "value": "screen"
+            },
+            {
+              "appearance": "tinted",
+              "value": "normal"
+            }
+          ]
+        },
+        {
+          "image-name": "2-Pink.svg",
+          "name": "2-Pink",
+          "glass": true,
+          "fill-specializations": [
+            {
+              "appearance": "tinted",
+              "value": {
+                "solid": "extended-gray:0.95000,1.00000"
+              }
+            }
+          ],
+          "opacity-specializations": [
+            {
+              "value": 0.95
+            },
+            {
+              "appearance": "tinted",
+              "value": 1
+            }
+          ],
+          "blend-mode-specializations": [
+            {
+              "value": "multiply"
+            },
+            {
+              "appearance": "dark",
+              "value": "screen"
+            },
+            {
+              "appearance": "tinted",
+              "value": "normal"
+            }
+          ]
+        },
+        {
+          "image-name": "1-Orange.svg",
+          "name": "1-Orange",
+          "glass": true,
+          "fill-specializations": [
+            {
+              "appearance": "tinted",
+              "value": {
+                "solid": "extended-gray:0.85000,1.00000"
+              }
+            }
+          ],
+          "opacity-specializations": [
+            {
+              "value": 0.95
+            },
+            {
+              "appearance": "tinted",
+              "value": 1
+            }
+          ],
+          "blend-mode-specializations": [
+            {
+              "value": "multiply"
+            },
+            {
+              "appearance": "dark",
+              "value": "screen"
+            },
+            {
+              "appearance": "tinted",
+              "value": "normal"
+            }
+          ]
+        }
+      ],
+      "shadow": {
+        "kind": "layer-color",
+        "opacity": 0.4
+      },
+      "specular": true
+    }
+  ],
+  "supported-platforms": {
+    "squares": "shared"
+  }
+}

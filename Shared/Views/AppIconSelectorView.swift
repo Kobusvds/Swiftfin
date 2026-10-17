@@ -25,15 +25,27 @@ struct AppIconSelectorView: View {
         }
     }
 
+    private func row(for icon: AppIcon) -> some View {
+        AppIconRow(icon: icon) {
+            Task {
+                await select(icon: icon)
+            }
+        }
+        .isSelected(icon == currentAppIcon)
+    }
+
     var body: some View {
         Form {
-            ForEach(AppIcon.allCases) { icon in
-                AppIconRow(icon: icon) {
-                    Task {
-                        await select(icon: icon)
-                    }
+            Section("Nextflix") {
+                ForEach(AppIcon.allCases.filter(\.isNextflix)) { icon in
+                    row(for: icon)
                 }
-                .isSelected(icon == currentAppIcon)
+            }
+
+            Section(L10n.jellyfin) {
+                ForEach(AppIcon.allCases.filter { !$0.isNextflix }) { icon in
+                    row(for: icon)
+                }
             }
         } image: {
             Image(currentAppIcon.iconName)

@@ -208,6 +208,8 @@ final class UserSessionManager: ObservableObject {
         #if os(iOS)
         // Refresh widgets with any playback progress and server address changes
         WidgetSync.update(session: currentSession)
+        #elseif os(tvOS)
+        TopShelfSync.update(session: currentSession)
         #endif
     }
 
@@ -359,6 +361,8 @@ final class UserSessionManager: ObservableObject {
 
         #if os(iOS)
         WidgetSync.update(session: newSession)
+        #elseif os(tvOS)
+        TopShelfSync.update(session: newSession)
         #endif
     }
 

@@ -153,7 +153,7 @@ final class ItemRecord: Identifiable {
         let update = ItemStore.Update(
             itemID: id,
             metadataChanged: previousMetadata != updatedMetadata || previousProgramID != currentProgram?.id,
-            userDataChanged: previous.userData != value.userData
+            userDataChanged: Self.comparableUserData(previous.userData) != Self.comparableUserData(value.userData)
         )
 
         if value != metadata {
@@ -174,6 +174,19 @@ final class ItemRecord: Identifiable {
 
     private func references(_ record: ItemRecord) -> Bool {
         self === record || currentProgram?.references(record) == true
+    }
+
+    /// Endpoints can disagree on derived fields for the same playback state, such as an in-progress
+    /// episode from resume items versus the full item. Reporting those as changes makes a series view
+    /// and the resume and next up collections refresh each other forever.
+    private static func comparableUserData(_ data: UserItemDataDto?) -> UserItemDataDto? {
+        guard var data else { return nil }
+
+        data.itemID = nil
+        data.key = ""
+        data.lastPlayedDate = nil
+        data.playedPercentage = nil
+        return data
     }
 
     // Playlist positions belong to entries rather than shared records

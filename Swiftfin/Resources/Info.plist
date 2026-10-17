@@ -67,18 +67,13 @@
 	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>UILaunchScreen</key>
-	<dict>
-		<key>UIImageName</key>
-		<string>jellyfin-blob-blue</string>
-		<key>UIImageRespectsSafeAreaInsets</key>
-		<true/>
-	</dict>
+	<dict/>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>
 	</array>
 	<key>UIRequiresFullScreen</key>
-	<true/>
+	<false/>
 	<key>UIStatusBarHidden</key>
 	<true/>
 	<key>UISupportedInterfaceOrientations</key>
@@ -90,6 +85,7 @@
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>

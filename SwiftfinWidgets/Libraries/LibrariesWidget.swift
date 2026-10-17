@@ -85,6 +85,8 @@ struct LibrariesWidget: Widget {
         .configurationDisplayName("Libraries")
         .description("Jump straight to your media libraries.")
         .supportedFamilies([.systemSmall])
+        // Tiles sit closer to the widget's edges than the default margins allow
+        .contentMarginsDisabled()
     }
 }
 
@@ -104,6 +106,7 @@ struct LibrariesWidgetView: View {
                     tile(at: 3)
                 }
             }
+            .padding(10)
         } else {
             VStack(spacing: 8) {
                 Image(systemName: "person.crop.circle")
@@ -115,6 +118,7 @@ struct LibrariesWidgetView: View {
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
             }
+            .padding()
         }
     }
 
@@ -142,7 +146,8 @@ private struct LibraryTile: View {
 
     var body: some View {
         VStack(spacing: 4) {
-            Image(systemName: library.systemImage)
+            // Custom tab icons are symbols in the widget's asset catalog
+            (UIImage(systemName: library.systemImage) != nil ? Image(systemName: library.systemImage) : Image(library.systemImage))
                 .font(.title2)
                 .foregroundStyle(Color.widgetAccent)
                 .widgetAccentable()

@@ -1,0 +1,134 @@
+{
+  "fill-specializations": [
+    {
+      "value": {
+        "linear-gradient": [
+          "srgb:1.00000,0.54118,0.23922,1.00000",
+          "srgb:0.60392,0.29412,1.00000,1.00000"
+        ],
+        "orientation": {
+          "start": {
+            "x": 0,
+            "y": 0
+          },
+          "stop": {
+            "x": 1,
+            "y": 1
+          }
+        }
+      }
+    },
+    {
+      "appearance": "dark",
+      "value": {
+        "linear-gradient": [
+          "srgb:0.22745,0.06275,0.13333,1.00000",
+          "srgb:0.16471,0.06275,0.31373,1.00000"
+        ],
+        "orientation": {
+          "start": {
+            "x": 0,
+            "y": 0
+          },
+          "stop": {
+            "x": 1,
+            "y": 1
+          }
+        }
+      }
+    }
+  ],
+  "groups": [
+    {
+      "name": "Glyph",
+      "layers": [
+        {
+          "image-name": "2-N.svg",
+          "name": "2-N",
+          "glass": true,
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "srgb:1.00000,1.00000,1.00000,1.00000"
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "solid": "srgb:1.00000,1.00000,1.00000,1.00000"
+              }
+            },
+            {
+              "appearance": "tinted",
+              "value": {
+                "solid": "extended-gray:1.00000,1.00000"
+              }
+            }
+          ],
+          "opacity-specializations": [
+            {
+              "value": 0.55
+            },
+            {
+              "appearance": "dark",
+              "value": 0.45
+            },
+            {
+              "appearance": "tinted",
+              "value": 1
+            }
+          ]
+        }
+      ],
+      "shadow": {
+        "kind": "layer-color",
+        "opacity": 0.5
+      },
+      "specular": true,
+      "translucency": {
+        "enabled": true,
+        "value": 0.6
+      },
+      "blur-material": 0.6
+    },
+    {
+      "name": "Orbs",
+      "layers": [
+        {
+          "image-name": "1-Orbs.png",
+          "name": "1-Orbs",
+          "glass": false,
+          "fill-specializations": [
+            {
+              "appearance": "tinted",
+              "value": {
+                "solid": "extended-gray:0.50000,1.00000"
+              }
+            }
+          ],
+          "opacity-specializations": [
+            {
+              "value": 1.0
+            },
+            {
+              "appearance": "dark",
+              "value": 0.6
+            },
+            {
+              "appearance": "tinted",
+              "value": 1
+            }
+          ]
+        }
+      ],
+      "shadow": {
+        "kind": "none",
+        "opacity": 0
+      },
+      "specular": false
+    }
+  ],
+  "supported-platforms": {
+    "squares": "shared"
+  }
+}

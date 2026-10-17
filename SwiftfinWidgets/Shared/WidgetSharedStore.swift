@@ -9,9 +9,9 @@
 import Foundation
 import Security
 
-/// Data the iOS app shares with its widgets through the app group.
+/// Data the app shares with its widgets and the tvOS top shelf through the app group.
 ///
-/// This file is compiled into both the app and the widget extension.
+/// This file is compiled into both apps, the widget extension, and the top shelf extension.
 enum WidgetSharedStore {
 
     /// The signed in user and the details needed to reach their server

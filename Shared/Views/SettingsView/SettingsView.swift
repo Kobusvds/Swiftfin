@@ -121,6 +121,12 @@ struct SettingsView: View {
 
             ColorPicker(L10n.accentColor, selection: $accentColor, supportsOpacity: false)
 
+            if UIApplication.shared.supportsAlternateIcons {
+                ChevronButton(L10n.appIcon) {
+                    router.route(to: .appIconSelector)
+                }
+            }
+
             ChevronButton(L10n.tabBar) {
                 router.route(to: .navigationTabsSettings)
             }

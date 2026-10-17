@@ -63,7 +63,7 @@ private struct LibraryMenu: View {
         Menu {
             Picker(selection: selection) {
                 ForEach(tabCoordinator.tabs, id: \.item.id) { tab in
-                    Label(tab.item.displayTitle, systemImage: tab.item.systemImage)
+                    Label(tab.item.displayTitle, symbol: tab.item.systemImage)
                         .tag(tab.item.id)
                 }
             } label: {
@@ -71,7 +71,7 @@ private struct LibraryMenu: View {
             }
             .pickerStyle(.inline)
         } label: {
-            Image(systemName: selectedTab?.systemImage ?? "rectangle.stack.fill")
+            Image(symbol: selectedTab?.systemImage ?? "rectangle.stack.fill")
                 .font(.title3)
                 .frame(width: 44, height: 44)
                 .coverFlowControlBackground()

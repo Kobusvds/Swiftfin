@@ -71,7 +71,7 @@ struct NavigationTabsSettingsView: View {
 
     @ViewBuilder
     private func tabLabel(_ tab: NavigationTab) -> some View {
-        Label(tab.displayTitle, systemImage: tab.systemImage)
+        Label(tab.displayTitle, symbol: tab.systemImage)
             .symbolRenderingMode(.monochrome)
             .foregroundStyle(.primary, .secondary)
     }
@@ -278,7 +278,7 @@ extension NavigationTabsSettingsView {
                                 selection = symbol
                                 UIDevice.impact(.light)
                             } label: {
-                                Image(systemName: symbol)
+                                Image(symbol: symbol)
                                     .font(.title2)
                                     .frame(width: tileSize, height: tileSize)
                                     .foregroundStyle(selection == symbol ? Color.white : Color.primary)

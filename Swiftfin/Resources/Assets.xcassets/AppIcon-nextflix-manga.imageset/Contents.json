@@ -1,0 +1,22 @@
+{
+  "images" : [
+    {
+      "filename" : "AppIcon-nextflix-manga.png",
+      "idiom" : "universal"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "AppIcon-nextflix-manga-dark.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

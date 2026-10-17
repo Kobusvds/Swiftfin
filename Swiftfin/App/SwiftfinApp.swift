@@ -35,6 +35,9 @@ struct SwiftfinApp: App {
                 }
             }
             .ignoresSafeArea()
+            .overlay {
+                LaunchIconOverlay()
+            }
         }
     }
 }

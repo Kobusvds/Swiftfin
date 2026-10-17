@@ -8,6 +8,13 @@
 
 enum AppIcon: String, CaseIterable, Displayable, Identifiable {
 
+    case nextflixSunset
+    case nextflixSakura
+    case nextflixNeko
+    case nextflixManga
+    case nextflixPrism
+    case nextflixGlass
+
     case jellyfin
     case red
     case orange
@@ -15,14 +22,31 @@ enum AppIcon: String, CaseIterable, Displayable, Identifiable {
     case green
     case blue
 
-    private static let prefix = "AppIcon-dark-"
-
     var iconName: String {
-        Self.prefix + rawValue
+        switch self {
+        case .nextflixSunset:
+            "AppIcon-nextflix-sunset"
+        case .nextflixSakura:
+            "AppIcon-nextflix-sakura"
+        case .nextflixNeko:
+            "AppIcon-nextflix-neko"
+        case .nextflixManga:
+            "AppIcon-nextflix-manga"
+        case .nextflixPrism:
+            "AppIcon-nextflix-prism"
+        case .nextflixGlass:
+            "AppIcon-nextflix-glass"
+        case .jellyfin, .red, .orange, .yellow, .green, .blue:
+            "AppIcon-dark-" + rawValue
+        }
     }
 
     var id: String {
         iconName
+    }
+
+    var isNextflix: Bool {
+        rawValue.hasPrefix("nextflix")
     }
 
     var alternateIconName: String? {
@@ -31,6 +55,18 @@ enum AppIcon: String, CaseIterable, Displayable, Identifiable {
 
     var displayTitle: String {
         switch self {
+        case .nextflixSunset:
+            "Sunset"
+        case .nextflixSakura:
+            "Sakura"
+        case .nextflixNeko:
+            "Neko"
+        case .nextflixManga:
+            "Manga"
+        case .nextflixPrism:
+            "Prism"
+        case .nextflixGlass:
+            "Glass"
         case .jellyfin:
             L10n.jellyfin
         case .red:
@@ -47,13 +83,6 @@ enum AppIcon: String, CaseIterable, Displayable, Identifiable {
     }
 
     static func resolve(alternateIconName: String?) -> Self {
-        guard let alternateIconName,
-              alternateIconName.hasPrefix(prefix)
-        else {
-            return .blue
-        }
-
-        let rawValue = alternateIconName.dropFirst(prefix.count)
-        return Self(rawValue: String(rawValue)) ?? .blue
+        allCases.first { $0.alternateIconName == alternateIconName } ?? .blue
     }
 }

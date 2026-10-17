@@ -55,6 +55,14 @@ struct MainTabView: View {
         Task { @MainActor in
             if case let .tab(id) = deepLink.destination {
                 tabCoordinator.select(tabID: id)
+            } else if case let .play(id) = deepLink.destination {
+                guard let userSession = userSessionManager.currentSession else { return }
+
+                userSessionManager.playItem(
+                    id: id,
+                    queuesEpisodes: true,
+                    userSession: userSession
+                )
             } else if let route = deepLink.route() {
                 await tabCoordinator.route(to: route)
             }
@@ -95,7 +103,7 @@ struct MainTabView: View {
                 } label: {
                     Label(
                         tab.item.displayTitle,
-                        systemImage: tab.item.systemImage
+                        symbol: tab.item.systemImage
                     )
                     .symbolRenderingMode(.monochrome)
                 }
@@ -116,7 +124,9 @@ struct MainTabView: View {
                 .tabViewStyle(.tabBarOnly)
         }
         #else
-        if #available(iOS 26, *) {
+        if ProcessInfo.processInfo.isiOSAppOnMac {
+            tabView()
+        } else if #available(iOS 26, *) {
             // Collapse the tab bar to just the selected tab while scrolling down
             tabView()
                 .tabBarMinimizeBehavior(.onScrollDown)
