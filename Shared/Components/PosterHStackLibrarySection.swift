@@ -50,9 +50,9 @@ struct PosterHStackLibrarySection<Library: PagingLibrary>: View
 
     private var headerTitle: some View {
         Text(group.displayTitle)
-            .font(.title3)
             .fontWeight(.semibold)
             .lineLimit(1)
+            .themedText(.sectionHeader, defaultFont: .title3)
     }
 
     @ViewBuilder
@@ -84,7 +84,7 @@ struct PosterHStackLibrarySection<Library: PagingLibrary>: View
                     headerTitle
 
                     Image(systemName: "chevron.forward")
-                        .font(.title3)
+                        .themedText(.sectionAccessory, defaultFont: .title3)
                         .foregroundStyle(.secondary)
                 }
                 #endif

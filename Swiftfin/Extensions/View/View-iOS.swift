@@ -61,6 +61,26 @@ extension View {
     }
 
     @ViewBuilder
+    func themedNavigationBar(
+        isEnabled: Bool = true,
+        isLoading: Bool = false,
+        isMenuHidden: Bool = false,
+        isGlowing: Bool = false,
+        @ViewBuilder
+        _ items: @escaping () -> some View
+    ) -> some View {
+        modifier(
+            ThemedNavigationBarModifier(
+                isEnabled: isEnabled,
+                isLoading: isLoading,
+                isMenuHidden: isMenuHidden,
+                isGlowing: isGlowing,
+                menuContent: items
+            )
+        )
+    }
+
+    @ViewBuilder
     func listRowCornerRadius(_ radius: CGFloat) -> some View {
         introspect(.listCell, on: .iOS(.v18...)) { cell in
             if #available(iOS 26, *) {

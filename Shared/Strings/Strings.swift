@@ -194,6 +194,8 @@ internal enum L10n {
   internal static let autoSwitchDescription = L10n.tr("Localizable", "autoSwitchDescription", fallback: "Connections will automatically switch based on Wi-Fi or cellular connectivity and the ordering of the connections below.")
   /// Average Frame Rate
   internal static let averageFrameRate = L10n.tr("Localizable", "averageFrameRate", fallback: "Average Frame Rate")
+  /// Back
+  internal static let back = L10n.tr("Localizable", "back", fallback: "Back")
   /// Backdrop
   internal static let backdrop = L10n.tr("Localizable", "backdrop", fallback: "Backdrop")
   /// A wide background image displayed behind the item details on its media page. Multiple backdrops can be added and will cycle or be selected randomly.
@@ -1104,6 +1106,8 @@ internal enum L10n {
   internal static let never = L10n.tr("Localizable", "never", fallback: "Never")
   /// Never run
   internal static let neverRun = L10n.tr("Localizable", "neverRun", fallback: "Never run")
+  /// New
+  internal static let new = L10n.tr("Localizable", "new", fallback: "New")
   /// New episodes only
   internal static let newEpisodesOnly = L10n.tr("Localizable", "newEpisodesOnly", fallback: "New episodes only")
   /// New password
@@ -1718,6 +1722,8 @@ internal enum L10n {
   internal static let stopPlaybackWarning = L10n.tr("Localizable", "stopPlaybackWarning", fallback: "Are you sure you want to stop this user\'s playback?")
   /// Stop Recording
   internal static let stopRecording = L10n.tr("Localizable", "stopRecording", fallback: "Stop Recording")
+  /// Story
+  internal static let story = L10n.tr("Localizable", "story", fallback: "Story")
   /// Story arc
   internal static let storyArc = L10n.tr("Localizable", "storyArc", fallback: "Story arc")
   /// The stream count exceeds the allowed limit
@@ -1810,6 +1816,8 @@ internal enum L10n {
   internal static let testSize = L10n.tr("Localizable", "testSize", fallback: "Test size")
   /// Text Subtitle
   internal static let textSubtitle = L10n.tr("Localizable", "textSubtitle", fallback: "Text Subtitle")
+  /// Theme
+  internal static let theme = L10n.tr("Localizable", "theme", fallback: "Theme")
   /// Theme song
   internal static let themeSong = L10n.tr("Localizable", "themeSong", fallback: "Theme song")
   /// Theme video
@@ -1998,6 +2006,8 @@ internal enum L10n {
   internal static let volume = L10n.tr("Localizable", "volume", fallback: "Volume")
   /// Votes
   internal static let votes = L10n.tr("Localizable", "votes", fallback: "Votes")
+  /// Watched
+  internal static let watched = L10n.tr("Localizable", "watched", fallback: "Watched")
   /// Weekday
   internal static let weekday = L10n.tr("Localizable", "weekday", fallback: "Weekday")
   /// Weekend

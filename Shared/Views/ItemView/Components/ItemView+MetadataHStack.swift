@@ -34,7 +34,7 @@ extension ItemView {
                     Text(seasonEpisodeLabel)
                 }
             }
-            .font(.caption)
+            .themedText(.heroMeta, defaultFont: .caption)
             .fontWeight(.semibold)
             .foregroundStyle(.secondary)
         }

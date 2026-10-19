@@ -57,7 +57,7 @@ struct PlayButton: View {
                 systemImage: "play.fill"
             )
         }
-        .labelStyle(ItemActionButtonLabelStyle(activeColor: accentColor))
+        .labelStyle(ItemActionButtonLabelStyle(activeColor: accentColor, isPrimary: true))
         .isSelected(true)
         .buttonBorderShape(.capsule)
         .buttonStyle(BasicHoverButtonStyle())

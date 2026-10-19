@@ -57,7 +57,7 @@ extension ItemView {
                         Image(.tomatoRotten)
                     }
                 }
-                .labelStyle(.attributeBadgeOutline)
+                .labelStyle(.attributeBadgeRating)
             }
         }
 
@@ -70,7 +70,7 @@ extension ItemView {
                 } icon: {
                     Image(systemName: "star.fill")
                 }
-                .labelStyle(.attributeBadgeOutline)
+                .labelStyle(.attributeBadgeRating)
             }
         }
 

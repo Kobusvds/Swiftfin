@@ -22,6 +22,9 @@ extension ItemView {
 
         struct Body: View {
 
+            @Environment(\.appTheme)
+            private var theme
+
             @ObservedObject
             var provider: ItemContentGroupProvider
 
@@ -68,68 +71,106 @@ extension ItemView {
                     EmptyView()
                 }
                 .failure {
-                    Text(provider.item.displayTitle)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .font(.largeTitle)
-                        .fontWeight(.semibold)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.leading)
-                        .foregroundStyle(.primary)
+                    ThemedHeroTitle(title: provider.item.displayTitle)
                 }
                 .accessibilityLabel(provider.item.displayTitle)
                 .accessibilityRemoveTraits(.isImage)
             }
 
             @ViewBuilder
+            private var titleBlock: some View {
+                VStack(alignment: .leading) {
+                    if let parentID = provider.item.parentRootID, let parentTitle = provider.item.parentTitle {
+                        ParentButton(title: parentTitle, id: parentID)
+                    }
+
+                    logo
+                }
+            }
+
+            @ViewBuilder
+            private var details: some View {
+                VStack(alignment: .leading, spacing: 10) {
+                    ItemView.Description(item: provider.item)
+
+                    HStack(alignment: .top) {
+                        ItemView.AttributesHStack(
+                            attributes: attributes,
+                            item: provider.item,
+                            selectedMediaSource: provider.mediaPlayerItemProvider?.mediaSource,
+                            alignment: .leading
+                        )
+
+                        MetadataHStack(item: provider.item)
+                    }
+                    .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+            }
+
+            @ViewBuilder
+            private var stripOverlay: some View {
+                VStack(alignment: .leading, spacing: 16) {
+                    titleBlock
+                        .padding(.horizontal, 16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    HStack(alignment: .center, spacing: 28) {
+                        ItemView.ActionBar(provider: provider)
+                            .fixedSize()
+
+                        details
+                    }
+                    .themedHeroStrip()
+                }
+                .padding(.horizontal, ThemedHeroLayout.y2kInset + ThemedHeroLayout.y2kStripInset - EdgeInsets.edgePadding)
+                .padding(.bottom, ThemedHeroLayout.y2kStripInset)
+                .colorScheme(.light)
+            }
+
+            @ViewBuilder
             private var overlay: some View {
+                if theme == .y2k {
+                    stripOverlay
+                } else {
+                    standardOverlay
+                }
+            }
+
+            @ViewBuilder
+            private var standardOverlay: some View {
                 HStack(alignment: .bottom, spacing: EdgeInsets.edgePadding) {
                     VStack(alignment: .center, spacing: UIDevice.isTV ? 30 : 5) {
-                        VStack(alignment: .leading) {
-                            if let parentID = provider.item.parentRootID, let parentTitle = provider.item.parentTitle {
-                                ParentButton(title: parentTitle, id: parentID)
-                            }
-
-                            logo
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        titleBlock
+                            .frame(maxWidth: .infinity, alignment: .leading)
 
                         ItemView.ActionBar(provider: provider)
                     }
-                    .frame(width: UIDevice.isTV ? 450 : 300)
+                    .frame(width: UIDevice.isTV ? 450 : theme.heroColumnWidth)
 
-                    VStack(alignment: .leading, spacing: 10) {
-                        ItemView.Description(item: provider.item)
-
-                        HStack(alignment: .top) {
-                            ItemView.AttributesHStack(
-                                attributes: attributes,
-                                item: provider.item,
-                                selectedMediaSource: provider.mediaPlayerItemProvider?.mediaSource,
-                                alignment: .leading
-                            )
-
-                            MetadataHStack(item: provider.item)
-                        }
-                        .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity)
+                    details
+                        .themedHeroDetails()
                 }
                 #if os(tvOS)
                 .focusSection()
                 #else
+                    .padding(.horizontal, theme == .gameUI2 ? ThemedHeroLayout.y2kInset + 28 - EdgeInsets.edgePadding : 0)
+                    .padding(.bottom, theme == .gameUI2 ? 6 : 0)
                     .edgePadding(.bottom)
                     .background(
                         alignment: .bottom,
                         extendedBy: .init(horizontal: EdgeInsets.edgePadding)
                     ) {
-                        Rectangle()
-                            .fill(Material.ultraThin)
-                            .mask(gradient: .eased(.easeOut)) {
-                                (location: 0, opacity: 0)
-                                (location: 1, opacity: 1)
-                            }
-                            // Reach the screen edges in landscape, past the side safe areas
-                            .ignoresSafeArea(edges: .horizontal)
+                        if !theme.isThemed {
+                            Rectangle()
+                                .fill(Material.ultraThin)
+                                .mask(gradient: .eased(.easeOut)) {
+                                    (location: 0, opacity: 0)
+                                    (location: 1, opacity: 1)
+                                }
+                                // Reach the screen edges in landscape, past the side safe areas
+                                .ignoresSafeArea(edges: .horizontal)
+                        }
                     }
                 #endif
             }
@@ -179,8 +220,9 @@ extension ItemView {
                                         }
                                 }
                         }
+                        .themedHeroPanel()
                         .aspectRatio(headerAspectRatio, contentMode: .fit)
-                        .bottomEdgeGradient(bottomColor: resolvedColor.wrappedValue)
+                        .themedHeroArtwork(bottomColor: resolvedColor.wrappedValue)
                         .accessibilityHidden(true)
                     }
                 }

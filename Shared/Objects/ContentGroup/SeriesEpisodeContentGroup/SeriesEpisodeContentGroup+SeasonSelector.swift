@@ -30,8 +30,8 @@ extension SeriesEpisodeContentGroup {
         @ViewBuilder
         private func title(_ value: String) -> some View {
             Text(value)
-                .font(.title2)
                 .fontWeight(.semibold)
+                .themedText(.sectionHeader, defaultFont: .title2)
                 .edgePadding(.horizontal)
         }
 

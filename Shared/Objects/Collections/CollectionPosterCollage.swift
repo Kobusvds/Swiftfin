@@ -20,6 +20,9 @@ import SwiftUI
 /// Shows `fallback`, such as the collection's own artwork, when no items have posters.
 struct CollectionPosterCollage<Fallback: View>: View {
 
+    @Environment(\.appTheme)
+    private var theme
+
     @Injected(\.currentUserSession)
     private var userSession
 
@@ -49,33 +52,67 @@ struct CollectionPosterCollage<Fallback: View>: View {
         }
     }
 
+    private var spacing: CGFloat {
+        switch theme {
+        case .default:
+            0
+        case .skeuo:
+            1
+        case .y2k:
+            2
+        case .gameUI2:
+            3
+        }
+    }
+
+    private var gapColor: Color {
+        switch theme {
+        case .default:
+            .clear
+        case .skeuo:
+            Skeuo.collageGap
+        case .y2k:
+            .white
+        case .gameUI2:
+            GameUI.outline
+        }
+    }
+
     @ViewBuilder
     private func collage(_ items: [BaseItemDto]) -> some View {
+        Group {
+            layout(items)
+        }
+        .background(gapColor)
+    }
+
+    @ViewBuilder
+    private func layout(_ items: [BaseItemDto]) -> some View {
         switch items.count {
         case 1:
             tile(items[0])
         case 2:
-            HStack(spacing: 0) {
+            HStack(spacing: spacing) {
                 tile(items[0])
                 tile(items[1])
             }
         case 3:
-            HStack(spacing: 0) {
+            HStack(spacing: spacing) {
                 tile(items[0])
 
-                VStack(spacing: 0) {
+                VStack(spacing: spacing) {
                     tile(items[1])
                     tile(items[2])
                 }
             }
         default:
-            VStack(spacing: 0) {
-                HStack(spacing: 0) {
+            VStack(spacing: spacing) {
+                HStack(spacing: spacing) {
                     tile(items[0])
                     tile(items[1])
                 }
 
-                HStack(spacing: 0) {
+                HStack(spacing: spacing) {
                     tile(items[2])
                     tile(items[3])
                 }

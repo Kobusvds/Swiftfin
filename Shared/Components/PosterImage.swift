@@ -44,17 +44,6 @@ struct PosterImage<Element: Poster>: View {
         )
     }
 
-    /// The item being shown, looking through type erased and shared wrappers
-    private var baseItem: BaseItemDto? {
-        let poster: any Poster = (element as? AnyPoster)?._poster ?? element
-
-        if let item = poster as? BaseItemDto {
-            return item
-        }
-
-        return (poster as? ItemEntry)?.value
-    }
-
     var body: some View {
         ZStack {
             Rectangle()
@@ -63,7 +52,7 @@ struct PosterImage<Element: Poster>: View {
             AlternateLayoutView {
                 Color.clear
             } content: {
-                if let item = baseItem, item.type == .boxSet, let collectionID = item.id {
+                if let item = element.underlyingBaseItem, item.type == .boxSet, let collectionID = item.id {
                     // Collections use a collage of their items' posters, falling back to their own artwork
                     CollectionPosterCollage(collectionID: collectionID) {
                         image
@@ -113,5 +102,30 @@ extension PosterImage {
 
     func pipeline(_ pipeline: ImagePipeline) -> Self {
         copy(modifying: \.pipeline, with: pipeline)
+    }
+}
+
+@MainActor
+extension Poster {
+
+    /// The item being shown, looking through type erased and shared wrappers
+    var underlyingBaseItem: BaseItemDto? {
+        let poster: any Poster = (self as? AnyPoster)?._poster ?? self
+
+        if let item = poster as? BaseItemDto {
+            return item
+        }
+
+        return (poster as? ItemEntry)?.value
+    }
+
+    var themedPosterKind: ThemedPosterKind {
+        let poster: any Poster = (self as? AnyPoster)?._poster ?? self
+
+        if poster is BaseItemPerson {
+            return .person
+        }
+
+        return underlyingBaseItem?.type == .boxSet ? .collection : .poster
     }
 }

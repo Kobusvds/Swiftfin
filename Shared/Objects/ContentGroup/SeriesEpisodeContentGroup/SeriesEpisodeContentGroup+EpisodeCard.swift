@@ -58,6 +58,7 @@ extension SeriesEpisodeContentGroup {
                     size: .medium
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .themedEpisodeStill(number: episode.indexNumber)
                 .overlay(alignment: .bottom) {
                     PosterIndicatorsOverlay(
                         item: episode,
@@ -242,6 +243,7 @@ extension SeriesEpisodeContentGroup {
                 priority: .userInitiated
             )
             .frame(maxHeight: .infinity, alignment: .top)
+            .themedEpisodeCard(item: contextMenuItem)
         }
     }
 
@@ -254,17 +256,17 @@ extension SeriesEpisodeContentGroup {
         var body: some View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(subHeader)
-                    .font(.caption)
+                    .themedText(.episodeLocator, defaultFont: .caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
 
                 Text(header)
-                    .font(.headline)
+                    .themedText(.episodeTitle, defaultFont: .headline)
                     .foregroundStyle(.primary)
                     .lineLimit(1)
 
                 SeeMoreText(content)
-                    .font(.caption)
+                    .themedText(.episodeBody, defaultFont: .caption)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.leading)
                     .lineLimit(3, reservesSpace: true)

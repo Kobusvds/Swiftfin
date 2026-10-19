@@ -164,4 +164,11 @@ extension L10n {
     // MARK: - Video Players
 
     static let avPlayer = "AVPlayer"
+
+    // MARK: - Themes
+
+    static let nextflix = "Nextflix"
+    static let skeuo = "Skeuo"
+    static let y2k = "Y2K"
+    static let gameUI2 = "Game UI 2"
 }

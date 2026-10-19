@@ -119,7 +119,7 @@ struct BaseItemDtoPosterLabel: View {
                 VStack(alignment: .leading, spacing: 2) {
                     if isTitlePresented {
                         Text(item.displayTitle)
-                            .font(.footnote)
+                            .themedText(.posterTitle, defaultFont: .footnote)
                             .multilineTextAlignment(.leading)
                             .lineLimit(hasSubtitle ? 1 : 2, reservesSpace: true)
                     }

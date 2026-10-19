@@ -22,6 +22,9 @@ struct MainTabView: View {
     @Default(.Customization.navigationTabs)
     private var navigationTabs
 
+    @AppStorage(AppTheme.storageKey)
+    private var appTheme: AppTheme = .default
+
     @InjectedObject(\.userSessionManager)
     private var userSessionManager
 
@@ -138,6 +141,7 @@ struct MainTabView: View {
 
     var body: some View {
         tabContent()
+            .environment(\.appTheme, appTheme)
             .onAppear {
                 // A deep link that signed in a user is set before this view exists
                 routePendingDeepLink(userSessionManager.consumePendingDeepLink())

@@ -20,10 +20,16 @@ extension LabelStyle where Self == OutlineAttributeBadgeLabelStyle {
     static var attributeBadgeOutline: OutlineAttributeBadgeLabelStyle {
         OutlineAttributeBadgeLabelStyle()
     }
+
+    static var attributeBadgeRating: OutlineAttributeBadgeLabelStyle {
+        OutlineAttributeBadgeLabelStyle(isRating: true)
+    }
 }
 
 struct FillAttributeBadgeLabelStyle: LabelStyle {
 
+    @Environment(\.appTheme)
+    private var theme
     @Environment(\.font)
     private var font
 
@@ -39,7 +45,16 @@ struct FillAttributeBadgeLabelStyle: LabelStyle {
         }
     }
 
+    @ViewBuilder
     func makeBody(configuration: Configuration) -> some View {
+        if theme.isThemed {
+            ThemedBadgeLabel(configuration: configuration, isFilled: true)
+        } else {
+            defaultBody(configuration: configuration)
+        }
+    }
+
+    private func defaultBody(configuration: Configuration) -> some View {
         content(configuration: configuration)
             .padding(.init(vertical: 1, horizontal: 4))
             .hidden()
@@ -57,14 +72,27 @@ struct FillAttributeBadgeLabelStyle: LabelStyle {
 
 struct OutlineAttributeBadgeLabelStyle: LabelStyle {
 
+    @Environment(\.appTheme)
+    private var theme
     @Environment(\.font)
     private var font
+
+    var isRating: Bool = false
 
     private var usedFont: Font {
         font ?? .caption.weight(.semibold)
     }
 
+    @ViewBuilder
     func makeBody(configuration: Configuration) -> some View {
+        if theme.isThemed {
+            ThemedBadgeLabel(configuration: configuration, isFilled: false, isRating: isRating)
+        } else {
+            defaultBody(configuration: configuration)
+        }
+    }
+
+    private func defaultBody(configuration: Configuration) -> some View {
         HStack(spacing: 2) {
             configuration.icon
 

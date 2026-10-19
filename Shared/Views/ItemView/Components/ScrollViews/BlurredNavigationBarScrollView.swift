@@ -12,19 +12,24 @@ extension ItemView {
 
     struct BlurredNavigationBarScrollView: View {
 
+        @Environment(\.appTheme)
+        private var theme
+
         let groups: [any ContentGroup]
 
         var body: some View {
             WithBlurNavigationBar {
                 _Body(groups: groups)
             }
-            .ignoresSafeArea()
+            .ignoresSafeArea(edges: theme.isThemed ? [.horizontal, .bottom] : .all)
             .trackingFrame(for: .scrollView)
         }
     }
 
     private struct _Body: View {
 
+        @Environment(\.appTheme)
+        private var theme
         @Environment(\.frameForParentView)
         private var frameForParentView
 
@@ -46,7 +51,7 @@ extension ItemView {
                 .scrollEdgeEffectStyle(.soft, for: .top)
 
                 Rectangle()
-                    .fill(Material.ultraThin)
+                    .fill(theme.isThemed ? AnyShapeStyle(.clear) : AnyShapeStyle(Material.ultraThin))
                     .mask(gradient: .eased(.smootherstep)) {
                         (location: 0, opacity: 1)
                         (location: 1, opacity: 0)

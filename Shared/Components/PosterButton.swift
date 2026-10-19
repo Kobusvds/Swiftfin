@@ -10,6 +10,8 @@ import SwiftUI
 
 struct PosterButton<Item: Poster>: View {
 
+    @Environment(\.appTheme)
+    private var theme
     @Environment(\.viewContext)
     private var viewContext
 
@@ -47,19 +49,34 @@ struct PosterButton<Item: Poster>: View {
             .glassEffect(in: .rect(cornerRadius: 10))
     }
 
+    private var imageDisplayType: PosterDisplayType {
+        theme.isThemed && item.themedPosterKind == .person ? .square : displayType
+    }
+
     @ViewBuilder
     private func posterImage(overlay: some View) -> some View {
         PosterImage(
             item: item,
-            type: displayType,
+            type: imageDisplayType,
             size: size
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .overlay { overlay.posterStyle(displayType) }
+        .themedPosterGloss(imageDisplayType)
+        .overlay { overlay.posterStyle(imageDisplayType) }
         .contentShape(.contextMenuPreview, Rectangle())
         .matchedTransitionSource(id: "item", in: namespace)
-        .subtleShadow()
+        .themedPosterFrame(item.themedPosterKind, ringIndex: ringIndex)
+        .overlay(alignment: .topTrailing) {
+            if theme == .gameUI2, let baseItem = item.underlyingBaseItem {
+                ThemedOverhangMarker(item: baseItem)
+                    .offset(x: 10, y: -10)
+            }
+        }
         .hoverEffect(.highlight)
+    }
+
+    private var ringIndex: Int {
+        item.displayTitle.unicodeScalars.reduce(0) { $0 + Int($1.value) }
     }
 
     @ViewBuilder

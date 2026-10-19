@@ -11,10 +11,14 @@ import SwiftUI
 
 struct ItemActionButtonLabelStyle: LabelStyle {
 
+    @Environment(\.appTheme)
+    private var theme
     @Environment(\.isSelected)
     private var isSelected
 
     var activeColor: Color?
+    var isPrimary: Bool = false
+    var isFavorite: Bool = false
 
     private var iconSize: CGFloat {
         UIDevice.isTV ? 40 : 24
@@ -36,7 +40,21 @@ struct ItemActionButtonLabelStyle: LabelStyle {
         return activeColor.overlayColor
     }
 
+    @ViewBuilder
     func makeBody(configuration: Configuration) -> some View {
+        if theme.isThemed {
+            ThemedHeroButtonLabel(
+                configuration: configuration,
+                isPrimary: isPrimary,
+                isFavorite: isFavorite,
+                activeColor: activeColor
+            )
+        } else {
+            defaultBody(configuration: configuration)
+        }
+    }
+
+    private func defaultBody(configuration: Configuration) -> some View {
         Label(configuration)
             .labelStyle(.iconOnly)
             .font(UIDevice.isTV ? .system(size: 30) : .title3)
@@ -57,6 +75,9 @@ struct ItemActionButtonLabelStyle: LabelStyle {
 struct ItemActionButtons: View {
 
     static let maximumButtons = 4
+
+    @Environment(\.appTheme)
+    private var theme
 
     @ObservedObject
     var provider: ItemContentGroupProvider
@@ -181,7 +202,7 @@ struct ItemActionButtons: View {
         let hasBarMenu = UIDevice.isTV && (overflowButtons.isNotEmpty || menuButtons.isNotEmpty || hasCollectionMenu)
 
         if showsPlayButton || buttons.isNotEmpty || hasBarMenu {
-            HStack(alignment: .center, spacing: UIDevice.isTV ? 24 : 8) {
+            HStack(alignment: .center, spacing: UIDevice.isTV ? 24 : theme.heroActionSpacing) {
                 if showsPlayButton {
                     PlayButton(provider: provider)
                         .focused(focusedButton, equals: ItemView.Component.play)
@@ -189,7 +210,7 @@ struct ItemActionButtons: View {
 
                 ForEach(buttons) { button in
                     Self.view(for: button)
-                        .labelStyle(ItemActionButtonLabelStyle(activeColor: button.activeColor))
+                        .labelStyle(ItemActionButtonLabelStyle(activeColor: button.activeColor, isFavorite: button == .favorited))
                         .focused(focusedButton, equals: button.id)
                 }
 
@@ -218,7 +239,7 @@ struct ItemActionButtons: View {
                     .focused(focusedButton, equals: ItemView.Component.menu)
                 }
             }
-            .frame(height: UIDevice.isTV ? 75 : 44)
+            .frame(height: UIDevice.isTV ? 75 : theme.heroActionHeight)
             .environmentObject(provider)
             .buttonBorderShape(.capsule)
             .buttonStyle(BasicHoverButtonStyle())

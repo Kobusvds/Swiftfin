@@ -323,26 +323,13 @@ extension View {
 
     @ViewBuilder
     func posterBorder() -> some View {
-        overlay {
-            ContainerRelativeShape()
-                .stroke(
-                    .white.opacity(0.1),
-                    lineWidth: 1
-                )
-                .clipped()
-        }
+        modifier(PosterBorderModifier())
     }
 
-    @ViewBuilder
     func posterCornerRadius(
         _ type: PosterDisplayType
     ) -> some View {
-        switch type {
-        case .landscape:
-            cornerRadius(ratio: 1 / 30, of: \.width)
-        case .portrait, .square:
-            cornerRadius(ratio: 0.0375, of: \.width)
-        }
+        modifier(PosterCornerRadiusModifier(type: type))
     }
 
     @ViewBuilder
@@ -463,4 +450,61 @@ extension View {
         }
     }
     #endif
+}
+
+private struct PosterBorderModifier: ViewModifier {
+
+    @Environment(\.appTheme)
+    private var theme
+
+    func body(content: Content) -> some View {
+        content.overlay {
+            ContainerRelativeShape()
+                .stroke(
+                    .white.opacity(theme == .skeuo ? 0.14 : 0.1),
+                    lineWidth: 1
+                )
+                .clipped()
+        }
+    }
+}
+
+private struct PosterCornerRadiusModifier: ViewModifier {
+
+    @Environment(\.appTheme)
+    private var theme
+
+    let type: PosterDisplayType
+
+    private var themedRadius: CGFloat? {
+        switch (theme, type) {
+        case (.default, _):
+            nil
+        case (.skeuo, .landscape):
+            4
+        case (.skeuo, _):
+            2
+        case (.y2k, .landscape):
+            13
+        case (.y2k, _):
+            14
+        case (.gameUI2, .landscape):
+            10
+        case (.gameUI2, _):
+            12
+        }
+    }
+
+    func body(content: Content) -> some View {
+        if let themedRadius {
+            content.cornerRadius(themedRadius, container: true)
+        } else {
+            switch type {
+            case .landscape:
+                content.cornerRadius(ratio: 1 / 30, of: \.width)
+            case .portrait, .square:
+                content.cornerRadius(ratio: 0.0375, of: \.width)
+            }
+        }
+    }
 }

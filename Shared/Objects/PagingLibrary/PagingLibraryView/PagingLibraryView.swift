@@ -184,6 +184,7 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
             .ignoresSafeArea()
         }
         .scrollIndicators(.hidden)
+        .environment(\.isOnPosterShelf, libraryStyle.displayType == .grid)
         .withViewContext(.isListRowSeparatorVisible)
         .withViewContext(.isThumb)
         .onReceive(tabItemSelected) { event in
@@ -378,8 +379,10 @@ extension PagingLibraryView {
         #if os(tvOS)
         .environmentObject(focusCoordinator)
         #else
-        .navigationBarMenuButton(
-            isLoading: viewModel.background.is(.gettingNextPage) || viewModel.background.is(.gettingNextSearchPage)
+        .themedNavigationBar(
+            isEnabled: !isShowingCoverFlow,
+            isLoading: viewModel.background.is(.gettingNextPage) || viewModel.background.is(.gettingNextSearchPage),
+            isGlowing: true
         ) {
             menuContent
         }

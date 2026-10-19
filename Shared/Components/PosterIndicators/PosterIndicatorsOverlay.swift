@@ -15,6 +15,8 @@ struct PosterIndicatorsOverlay: View {
     @Default(.accentColor)
     private var accentColor
 
+    @Environment(\.appTheme)
+    private var theme
     @Environment(\.isSelected)
     private var isSelected
     @Environment(\.posterConfiguration)
@@ -36,11 +38,7 @@ struct PosterIndicatorsOverlay: View {
     }
 
     private var showsUnplayedIndicator: Bool {
-        indicators.contains(.unplayed) &&
-            item.canBePlayed &&
-            !item.isLiveStream &&
-            item.userData?.isPlayed == false &&
-            (item.userData?.playbackPositionTicks ?? 0) == 0
+        item.showsUnplayedIndicator(indicators)
     }
 
     private var showsProgressIndicator: Bool {
@@ -77,7 +75,7 @@ struct PosterIndicatorsOverlay: View {
             }
         }
 
-        if showsPlayedIndicator {
+        if showsPlayedIndicator, !theme.isThemed {
             QuadrantItem(color: accentColor) {
                 Text(Image(systemName: "checkmark"))
                     .fontWeight(.bold)
@@ -90,11 +88,25 @@ struct PosterIndicatorsOverlay: View {
         VStack(spacing: 0) {
             ZStack {
                 if showsUnplayedIndicator {
-                    UnplayedIndicator(
-                        count: posterConfiguration.unplayedStyle == .count ? item.userData?.unplayedItemCount : nil
-                    )
-                    .frame(height: indicatorSize)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                    if theme.isThemed {
+                        ThemedUnplayedMarker(
+                            count: posterConfiguration.unplayedStyle == .count ? item.userData?.unplayedItemCount : nil
+                        )
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                        .accessibilityLabel(L10n.unplayed)
+                    } else {
+                        UnplayedIndicator(
+                            count: posterConfiguration.unplayedStyle == .count ? item.userData?.unplayedItemCount : nil
+                        )
+                        .frame(height: indicatorSize)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                    }
+                }
+
+                if showsPlayedIndicator, theme.isThemed {
+                    ThemedPlayedMarker()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                        .accessibilityLabel(L10n.played)
                 }
 
                 if !showsProgressIndicator {
@@ -136,5 +148,16 @@ struct PosterSelectionOverlay: View {
                 .clipped()
                 .accessibilityHidden(true)
         }
+    }
+}
+
+extension BaseItemDto {
+
+    func showsUnplayedIndicator(_ indicators: PosterIndicator) -> Bool {
+        indicators.contains(.unplayed) &&
+            canBePlayed &&
+            !isLiveStream &&
+            userData?.isPlayed == false &&
+            (userData?.playbackPositionTicks ?? 0) == 0
     }
 }

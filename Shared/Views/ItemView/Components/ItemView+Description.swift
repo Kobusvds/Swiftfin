@@ -40,7 +40,7 @@ extension ItemView {
                                 router.route(to: .itemOverview(item: item))
                             } label: {
                                 SeeMoreText(itemOverview)
-                                    .font(.footnote)
+                                    .themedText(.heroBody, defaultFont: .footnote)
                                     .lineLimit(3)
                             }
                             .buttonStyle(.plain)
