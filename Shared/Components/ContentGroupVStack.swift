@@ -12,6 +12,8 @@ struct ContentGroupVStack: View {
 
     @Environment(\.contentGroupBodyLeadingInset)
     private var bodyLeadingInset
+    @Environment(\.horizontalSizeClass)
+    private var horizontalSizeClass
 
     let groups: [any ContentGroup]
 
@@ -30,11 +32,16 @@ struct ContentGroupVStack: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: spacing) {
-            ForEach(groups, id: \.id) { group in
+            ForEach(Array(groups.enumerated()), id: \.element.id) { index, group in
                 makeGroupBody(group)
                     .eraseToAnyView()
                     // Headers stay edge to edge
                     .padding(.leading, group.id == ItemView.Component.header ? 0 : bodyLeadingInset)
+                    .themedQuickLoadEntrance(
+                        group.id == ItemView.Component.header
+                            ? nil
+                            : ThemedQuickLoadStagger.group(index: index, isCompact: horizontalSizeClass != .regular)
+                    )
                     .coordinatedFocus(group.id)
             }
         }

@@ -72,16 +72,20 @@ extension ItemView {
                             .aspectRatio(headerAspectRatio, contentMode: .fit)
                     } content: {
                         logo
+                            .themedQuickLoadEntrance(ThemedQuickLoadStagger.title)
                     }
                     .zIndex(10)
 
                     VStack(alignment: .center, spacing: 10) {
                         MetadataHStack(item: provider.item)
+                            .themedQuickLoadEntrance(ThemedQuickLoadStagger.badges)
 
                         ItemView.ActionBar(provider: provider)
                             .frame(maxWidth: 300)
+                            .themedQuickLoadEntrance(ThemedQuickLoadStagger.actionRow)
 
                         ItemView.Description(item: provider.item)
+                            .themedQuickLoadEntrance(ThemedQuickLoadStagger.description)
 
                         ItemView.AttributesHStack(
                             attributes: attributes,
@@ -91,6 +95,7 @@ extension ItemView {
                         )
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .foregroundStyle(.secondary)
+                        .themedQuickLoadEntrance(ThemedQuickLoadStagger.badges)
                     }
                     .edgePadding(.bottom)
                     .background(
@@ -106,6 +111,7 @@ extension ItemView {
                                 (location: 0, opacity: 0)
                                 (location: 0.2, opacity: 1)
                             }
+                            .themedQuickLoadEntrance(ThemedQuickLoadStagger.actionRow)
                     }
                     .zIndex(9)
                 }
@@ -145,6 +151,7 @@ extension ItemView {
                                                 resolveColor(from: image, binding: resolvedColor)
                                             }
                                     }
+                                    .themedQuickLoadHeroZoom()
                                 }
                                 .aspectRatio(imageAspectRatio, contentMode: .fit)
                                 .accessibilityHidden(true)

@@ -114,12 +114,15 @@ extension ItemView {
                     titleBlock
                         .padding(.horizontal, 16)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        .themedQuickLoadEntrance(ThemedQuickLoadStagger.title)
 
                     HStack(alignment: .center, spacing: 28) {
                         ItemView.ActionBar(provider: provider)
                             .fixedSize()
+                            .themedQuickLoadEntrance(ThemedQuickLoadStagger.actionRow)
 
                         details
+                            .themedQuickLoadEntrance(ThemedQuickLoadStagger.description)
                     }
                     .themedHeroStrip()
                 }
@@ -143,13 +146,16 @@ extension ItemView {
                     VStack(alignment: .center, spacing: UIDevice.isTV ? 30 : 5) {
                         titleBlock
                             .frame(maxWidth: .infinity, alignment: .leading)
+                            .themedQuickLoadEntrance(ThemedQuickLoadStagger.title)
 
                         ItemView.ActionBar(provider: provider)
+                            .themedQuickLoadEntrance(ThemedQuickLoadStagger.actionRow)
                     }
                     .frame(width: UIDevice.isTV ? 450 : theme.heroColumnWidth)
 
                     details
                         .themedHeroDetails()
+                        .themedQuickLoadEntrance(ThemedQuickLoadStagger.description)
                 }
                 #if os(tvOS)
                 .focusSection()
@@ -219,6 +225,7 @@ extension ItemView {
                                             resolveColor(from: image, binding: resolvedColor)
                                         }
                                 }
+                                .themedQuickLoadHeroZoom()
                         }
                         .themedHeroPanel()
                         .aspectRatio(headerAspectRatio, contentMode: .fit)

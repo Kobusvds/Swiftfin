@@ -974,6 +974,10 @@ internal enum L10n {
   internal static let liveTVPrograms = L10n.tr("Localizable", "liveTVPrograms", fallback: "Live TV programs")
   /// Live TV recording management
   internal static let liveTVRecordingManagement = L10n.tr("Localizable", "liveTVRecordingManagement", fallback: "Live TV recording management")
+  /// Loading %@
+  internal static func loadingItem(_ p1: Any) -> String {
+    return L10n.tr("Localizable", "loadingItem", String(describing: p1), fallback: "Loading %@")
+  }
   /// Local
   internal static let local = L10n.tr("Localizable", "local", fallback: "Local")
   /// Local servers
@@ -1152,6 +1156,8 @@ internal enum L10n {
   internal static let noResults = L10n.tr("Localizable", "noResults", fallback: "No results")
   /// No runtime limit
   internal static let noRuntimeLimit = L10n.tr("Localizable", "noRuntimeLimit", fallback: "No runtime limit")
+  /// Now showing
+  internal static let nowShowing = L10n.tr("Localizable", "nowShowing", fallback: "Now showing")
   /// Official rating
   internal static let officialRating = L10n.tr("Localizable", "officialRating", fallback: "Official rating")
   /// OK
@@ -1408,6 +1414,12 @@ internal enum L10n {
   internal static let quickConnectSuccessMessage = L10n.tr("Localizable", "quickConnectSuccessMessage", fallback: "Authorizing Quick Connect successful. Please continue on your other device.")
   /// This user will be authenticated to the other device.
   internal static let quickConnectUserDisclaimer = L10n.tr("Localizable", "quickConnectUserDisclaimer", fallback: "This user will be authenticated to the other device.")
+  /// Go!
+  internal static let quickLoadGo = L10n.tr("Localizable", "quickLoadGo", fallback: "Go!")
+  /// Ready?
+  internal static let quickLoadReady = L10n.tr("Localizable", "quickLoadReady", fallback: "Ready?")
+  /// Raising the curtain…
+  internal static let raisingTheCurtain = L10n.tr("Localizable", "raisingTheCurtain", fallback: "Raising the curtain…")
   /// Random
   internal static let random = L10n.tr("Localizable", "random", fallback: "Random")
   /// Random image
@@ -1700,6 +1712,8 @@ internal enum L10n {
   internal static let sourceCode = L10n.tr("Localizable", "sourceCode", fallback: "Source code")
   /// Special features
   internal static let specialFeatures = L10n.tr("Localizable", "specialFeatures", fallback: "Special features")
+  /// Spinning up
+  internal static let spinningUp = L10n.tr("Localizable", "spinningUp", fallback: "Spinning up")
   /// Splashscreen
   internal static let splashscreen = L10n.tr("Localizable", "splashscreen", fallback: "Splashscreen")
   /// When all servers are selected, use the splashscreen from a single server or a random server.
