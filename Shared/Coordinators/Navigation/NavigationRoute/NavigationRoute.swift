@@ -27,6 +27,9 @@ struct NavigationRoute: Identifiable, Hashable {
 
     let id: String
 
+    /// Name of the page, used as the back title by pages pushed on top of it
+    var title: String?
+
     private let content: AnyView
     var transitionType: TransitionType
     var namespace: Namespace.ID?

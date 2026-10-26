@@ -13,6 +13,8 @@ struct PosterHStack<
     Data: Collection
 >: View where Data.Element: Poster, Data.Index == Int {
 
+    @Environment(\.appTheme)
+    private var theme
     #if os(iOS)
     @Environment(\.verticalSizeClass)
     private var verticalSizeClass
@@ -98,11 +100,13 @@ struct PosterHStack<
             ) { namespace in
                 action(item, namespace)
             }
+            .environment(\.appTheme, theme)
         }
         .clipsToBounds(false)
         .insets(horizontal: EdgeInsets.edgePadding)
         .itemSpacing(itemSpacing)
         .scrollBehavior(.continuousLeadingEdge)
+        .id(theme)
         #if os(iOS)
         // Rebuild the collection when rotating so the new layout applies
         .id(verticalSizeClass)

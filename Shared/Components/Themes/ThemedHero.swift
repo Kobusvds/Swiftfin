@@ -207,7 +207,7 @@ struct ThemedBadgeLabel: View {
             .font(Skeuo.font(12, .bold))
             .foregroundStyle(isFilled ? Skeuo.amberText : Skeuo.ink)
             .padding(.horizontal, 7)
-            .frame(height: 22)
+            .frame(height: 22 * ThemeFont.scale)
             .background(isFilled ? Skeuo.amber : Skeuo.whiteGel, in: .rect(cornerRadius: 4))
             .overlay {
                 RoundedRectangle(cornerRadius: 4)
@@ -222,7 +222,7 @@ struct ThemedBadgeLabel: View {
             .font(Y2K.font(12.5, .semibold))
             .foregroundStyle(Y2K.navy)
             .padding(.horizontal, 10)
-            .frame(height: 24)
+            .frame(height: 24 * ThemeFont.scale)
             .y2kGel(y2kColors.fill, edge: y2kColors.edge, in: .capsule)
         case .gameUI2:
             HStack(spacing: 5) {
@@ -233,7 +233,7 @@ struct ThemedBadgeLabel: View {
                             Circle()
                                 .strokeBorder(GameUI.coinEdge, lineWidth: 2)
                         }
-                        .frame(width: 18, height: 18)
+                        .frame(width: 18 * ThemeFont.scale, height: 18 * ThemeFont.scale)
                 } else {
                     configuration.icon
                 }
@@ -244,7 +244,7 @@ struct ThemedBadgeLabel: View {
             .foregroundStyle(GameUI.outline)
             .padding(.leading, isRating ? 4 : 10)
             .padding(.trailing, 10)
-            .frame(height: 26)
+            .frame(height: 26 * ThemeFont.scale)
             .background(gameColor, in: .capsule)
             .overlay {
                 Capsule()
@@ -273,7 +273,7 @@ struct ThemedHeroTitle: View {
                 .foregroundStyle(.primary)
         case .skeuo:
             Text(title.localizedUppercase)
-                .font(.custom("CinzelDecorative-Black", size: 54))
+                .font(ThemeFont.custom("CinzelDecorative-Black", size: 54))
                 .lineSpacing(-8)
                 .lineLimit(2)
                 .minimumScaleFactor(0.4)
@@ -427,16 +427,6 @@ private struct ThemedHeroPanelModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         switch theme {
-        case .y2k:
-            content
-                .clipShape(.rect(cornerRadius: 28))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 28)
-                        .strokeBorder(.white, lineWidth: 3)
-                }
-                .shadow(color: Y2K.shadow.opacity(0.35), radius: 11, y: 8)
-                .padding(.horizontal, ThemedHeroLayout.y2kInset)
-                .padding(.top, 12)
         case .gameUI2:
             content
                 .clipShape(.rect(cornerRadius: 20))

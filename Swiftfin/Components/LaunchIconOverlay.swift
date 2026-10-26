@@ -16,7 +16,7 @@ struct LaunchIconOverlay: View {
     @State
     private var isVisible = true
 
-    private let icon = AppIcon.resolve(alternateIconName: UIApplication.shared.alternateIconName)
+    private let icon = AppIcon.current
 
     var body: some View {
         if isVisible {

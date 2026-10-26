@@ -1632,6 +1632,8 @@ internal enum L10n {
   internal static let settings = L10n.tr("Localizable", "settings", fallback: "Settings")
   /// Short
   internal static let short = L10n.tr("Localizable", "short", fallback: "Short")
+  /// Show all libraries
+  internal static let showAllLibraries = L10n.tr("Localizable", "showAllLibraries", fallback: "Show all libraries")
   /// Show favorited
   internal static let showFavorited = L10n.tr("Localizable", "showFavorited", fallback: "Show favorited")
   /// Show missing episodes

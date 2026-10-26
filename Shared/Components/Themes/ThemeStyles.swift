@@ -38,6 +38,17 @@ extension LinearGradient {
     )
 }
 
+enum ThemeFont {
+
+    static var scale: CGFloat {
+        UIDevice.isTV ? 1.7 : 1
+    }
+
+    static func custom(_ name: String, size: CGFloat) -> Font {
+        .custom(name, size: size * scale)
+    }
+}
+
 enum Skeuo {
 
     static let linen = Color(hex: "#333945")
@@ -76,8 +87,6 @@ enum Skeuo {
     static let steel = Color(hex: "#55595F")
     static let ink = Color(hex: "#2B2D31")
     static let label = Color(hex: "#E4E7EC")
-    static let heroText = Color(hex: "#F6EEE4")
-    static let heroMeta = Color(hex: "#E9DCCB")
     static let paper = LinearGradient.vertical(.white, Color(hex: "#EFEBE2"))
     static let paperEdge = Color(hex: "#1E2127")
     static let paperPage = Color(hex: "#ECE8DE")
@@ -97,7 +106,7 @@ enum Skeuo {
             "HelveticaNeue"
         }
 
-        return .custom(name, size: size)
+        return ThemeFont.custom(name, size: size)
     }
 }
 
@@ -212,11 +221,11 @@ enum Y2K {
             "Kanit-Regular"
         }
 
-        return .custom(name, size: size)
+        return ThemeFont.custom(name, size: size)
     }
 
     static func title(_ size: CGFloat) -> Font {
-        .custom("Audiowide-Regular", size: size)
+        ThemeFont.custom("Audiowide-Regular", size: size)
     }
 }
 
@@ -310,7 +319,7 @@ enum GameUI {
     static let ringColors: [Color] = [yellow, pink, green, orange, lilac]
 
     static func title(_ size: CGFloat) -> Font {
-        .custom("LilitaOne", size: size)
+        ThemeFont.custom("LilitaOne", size: size)
     }
 
     static func font(_ size: CGFloat, _ weight: Font.Weight = .bold) -> Font {
@@ -323,7 +332,7 @@ enum GameUI {
             "Nunito-ExtraBold"
         }
 
-        return .custom(name, size: size)
+        return ThemeFont.custom(name, size: size)
     }
 }
 
@@ -493,7 +502,8 @@ struct ThemedPageBackground: View {
                     endRadiusFraction: 2
                 )
             }
-            .ignoresSafeArea()        case .gameUI2:
+            .ignoresSafeArea()
+        case .gameUI2:
             ZStack {
                 GameUI.page
 
@@ -503,3 +513,32 @@ struct ThemedPageBackground: View {
         }
     }
 }
+
+#if os(tvOS)
+extension View {
+
+    func themedPage(isGlowing: Bool = false) -> some View {
+        modifier(ThemedPageModifier(isGlowing: isGlowing))
+    }
+}
+
+private struct ThemedPageModifier: ViewModifier {
+
+    @Environment(\.appTheme)
+    private var theme
+
+    let isGlowing: Bool
+
+    func body(content: Content) -> some View {
+        if theme.isThemed {
+            content
+                .background {
+                    ThemedPageBackground(isGlowing: isGlowing)
+                }
+                .environment(\.colorScheme, theme.colorScheme ?? .dark)
+        } else {
+            content
+        }
+    }
+}
+#endif

@@ -40,11 +40,13 @@ extension NavigationRoute {
         library: Library,
         displayTitle: String? = nil
     ) -> NavigationRoute where Library.Element: LibraryElement {
-        NavigationRoute(
+        var route = NavigationRoute(
             id: "library-\(library.parent.pagingLibraryID)",
             withNamespace: { .push(.zoom(sourceID: "item", namespace: $0)) }
         ) {
             PagingLibraryView(library: library, displayTitle: displayTitle)
         }
+        route.title = displayTitle ?? library.parent.displayTitle
+        return route
     }
 }

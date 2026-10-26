@@ -66,15 +66,19 @@ extension View {
         isLoading: Bool = false,
         isMenuHidden: Bool = false,
         isGlowing: Bool = false,
+        isOverlay: Bool = false,
+        title: String? = nil,
         @ViewBuilder
         _ items: @escaping () -> some View
     ) -> some View {
         modifier(
             ThemedNavigationBarModifier(
+                title: title,
                 isEnabled: isEnabled,
                 isLoading: isLoading,
                 isMenuHidden: isMenuHidden,
                 isGlowing: isGlowing,
+                isOverlay: isOverlay,
                 menuContent: items
             )
         )

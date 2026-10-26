@@ -59,6 +59,11 @@ struct PosterIndicatorsOverlay: View {
             (item.userData?.playbackPositionTicks ?? 0) == 0
     }
 
+    /// Movies show nothing in the top trailing corner.
+    private var showsTopTrailingIndicators: Bool {
+        item.type != .movie
+    }
+
     @ArrayBuilder<QuadrantItem>
     private var bottomIndicators: [QuadrantItem] {
         if item.isRecording {
@@ -74,20 +79,12 @@ struct PosterIndicatorsOverlay: View {
                     .accessibilityLabel(L10n.favorited)
             }
         }
-
-        if showsPlayedIndicator, !theme.isThemed {
-            QuadrantItem(color: accentColor) {
-                Text(Image(systemName: "checkmark"))
-                    .fontWeight(.bold)
-                    .accessibilityLabel(L10n.played)
-            }
-        }
     }
 
     var body: some View {
         VStack(spacing: 0) {
             ZStack {
-                if showsUnplayedIndicator {
+                if showsUnplayedIndicator, showsTopTrailingIndicators {
                     if theme.isThemed {
                         ThemedUnplayedMarker(
                             count: posterConfiguration.unplayedStyle == .count ? item.userData?.unplayedItemCount : nil
@@ -103,10 +100,21 @@ struct PosterIndicatorsOverlay: View {
                     }
                 }
 
-                if showsPlayedIndicator, theme.isThemed {
-                    ThemedPlayedMarker()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                        .accessibilityLabel(L10n.played)
+                if showsPlayedIndicator, showsTopTrailingIndicators {
+                    if theme.isThemed {
+                        ThemedPlayedMarker()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                            .accessibilityLabel(L10n.played)
+                    } else {
+                        Quadrant(.topTrailing) {
+                            QuadrantItem(color: accentColor) {
+                                Text(Image(systemName: "checkmark"))
+                                    .fontWeight(.bold)
+                                    .accessibilityLabel(L10n.played)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                    }
                 }
 
                 if !showsProgressIndicator {

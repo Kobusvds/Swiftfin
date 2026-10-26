@@ -127,6 +127,9 @@ extension SeriesEpisodeContentGroup {
             case episodes
         }
 
+        @Environment(\.appTheme)
+        private var theme
+
         /// Whether there's room for several episodes, such as an iPhone in landscape
         @State
         private var isWide = false
@@ -190,6 +193,7 @@ extension SeriesEpisodeContentGroup {
                 ) { element in
                     content(element)
                         .focused($focusedElement, equals: element.id)
+                        .environment(\.appTheme, theme)
                         #if os(tvOS)
                         .ignoresSafeArea()
                         #endif
@@ -199,6 +203,7 @@ extension SeriesEpisodeContentGroup {
                 .insets(horizontal: EdgeInsets.edgePadding)
                 .itemSpacing(EdgeInsets.itemSpacing)
                 .scrollBehavior(.continuousLeadingEdge)
+                .id(theme)
                 #if os(iOS)
                 // Rebuild the collection when rotating so the new layout applies
                 .id(isWide)

@@ -31,6 +31,8 @@ private struct ThemedTextModifier: ViewModifier {
 
     @Environment(\.appTheme)
     private var theme
+    @Environment(\.horizontalSizeClass)
+    private var horizontalSizeClass
 
     let role: ThemedTextRole
     let defaultFont: Font
@@ -113,13 +115,23 @@ private struct ThemedTextModifier: ViewModifier {
                 .font(.system(size: 16, weight: .heavy))
                 .foregroundStyle(Y2K.pinkDeep, Y2K.pinkDeep)
         case .heroBody:
-            content
-                .font(Y2K.font(14.5))
-                .foregroundStyle(Y2K.navy)
+            if horizontalSizeClass == .compact {
+                content
+                    .font(Y2K.font(14.5))
+            } else {
+                content
+                    .font(Y2K.font(14.5))
+                    .foregroundStyle(Y2K.navy)
+            }
         case .heroMeta:
-            content
-                .font(Y2K.font(14))
-                .foregroundStyle(Y2K.muted)
+            if horizontalSizeClass == .compact {
+                content
+                    .font(Y2K.font(14))
+            } else {
+                content
+                    .font(Y2K.font(14))
+                    .foregroundStyle(Y2K.muted)
+            }
         case .episodeLocator:
             content
                 .font(Y2K.font(12))
@@ -151,13 +163,9 @@ private struct ThemedTextModifier: ViewModifier {
         case .heroBody:
             content
                 .font(Skeuo.font(15))
-                .foregroundStyle(Skeuo.heroText)
-                .shadow(color: .black.opacity(0.8), radius: 1, y: 1)
         case .heroMeta:
             content
                 .font(Skeuo.font(14))
-                .foregroundStyle(Skeuo.heroMeta)
-                .shadow(color: .black.opacity(0.8), radius: 1, y: 1)
         case .episodeLocator:
             content
                 .font(Skeuo.font(12))

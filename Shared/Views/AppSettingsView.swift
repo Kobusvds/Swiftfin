@@ -67,7 +67,7 @@ struct AppSettingsView: View {
 
             Section(L10n.customize) {
 
-                if UIApplication.shared.supportsAlternateIcons {
+                if AppIcon.isSelectable {
                     ChevronButton(L10n.appIcon) {
                         router.route(to: .appIconSelector)
                     }

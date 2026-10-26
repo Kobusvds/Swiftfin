@@ -52,6 +52,13 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>NotoSansCJK-Regular.ttc</string>
+		<string>Audiowide-Regular.ttf</string>
+		<string>CinzelDecorative-Black.ttf</string>
+		<string>Kanit-Regular.ttf</string>
+		<string>Kanit-Medium.ttf</string>
+		<string>Kanit-SemiBold.ttf</string>
+		<string>LilitaOne-Regular.ttf</string>
+		<string>Nunito-Variable.ttf</string>
 	</array>
 	<key>UILaunchScreen</key>
 	<dict>

@@ -14,6 +14,8 @@ extension ItemView {
 
         @Environment(\.appTheme)
         private var theme
+        @Environment(\.horizontalSizeClass)
+        private var horizontalSizeClass
 
         let groups: [any ContentGroup]
 
@@ -21,7 +23,9 @@ extension ItemView {
             WithBlurNavigationBar {
                 _Body(groups: groups)
             }
-            .ignoresSafeArea(edges: theme.isThemed ? [.horizontal, .bottom] : .all)
+            .ignoresSafeArea(
+                edges: theme.isThemed && !theme.overlaysItemTopBar(in: horizontalSizeClass) ? [.horizontal, .bottom] : .all
+            )
             .trackingFrame(for: .scrollView)
         }
     }
@@ -32,6 +36,18 @@ extension ItemView {
         private var theme
         @Environment(\.frameForParentView)
         private var frameForParentView
+        @Environment(\.horizontalSizeClass)
+        private var horizontalSizeClass
+
+        private var showsTopBlur: Bool {
+            !theme.isThemed || theme.overlaysItemTopBar(in: horizontalSizeClass)
+        }
+
+        /// How far the blur reaches below the safe area, the Y2K iPad bar sits
+        /// below a short status bar so the fade has to extend behind it
+        private var topBlurExtent: CGFloat {
+            theme == .y2k && horizontalSizeClass == .regular ? 110 : 20
+        }
 
         let groups: [any ContentGroup]
 
@@ -51,14 +67,14 @@ extension ItemView {
                 .scrollEdgeEffectStyle(.soft, for: .top)
 
                 Rectangle()
-                    .fill(theme.isThemed ? AnyShapeStyle(.clear) : AnyShapeStyle(Material.ultraThin))
+                    .fill(showsTopBlur ? AnyShapeStyle(Material.ultraThin) : AnyShapeStyle(.clear))
                     .mask(gradient: .eased(.smootherstep)) {
                         (location: 0, opacity: 1)
                         (location: 1, opacity: 0)
                     }
                     .frame(
                         height: frameForParentView[.scrollView, default: .zero]
-                            .safeAreaInsets.top + 20
+                            .safeAreaInsets.top + topBlurExtent
                     )
                     .offset(
                         y: -frameForParentView[.scrollView, default: .zero]

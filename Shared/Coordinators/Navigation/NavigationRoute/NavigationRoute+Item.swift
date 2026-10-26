@@ -153,12 +153,18 @@ extension NavigationRoute {
     static func item(item: BaseItemDto) -> NavigationRoute {
         let provider = ItemContentGroupProvider(item: item)
 
-        return NavigationRoute(
+        var route = NavigationRoute(
             id: "item-\(item.id ?? "Unknown")",
             withNamespace: { .push(.zoom(sourceID: "item", namespace: $0)) }
         ) {
             ItemView(provider: provider)
         }
+
+        if item.type == .boxSet {
+            route.title = item.displayTitle
+        }
+
+        return route
     }
 
     @MainActor

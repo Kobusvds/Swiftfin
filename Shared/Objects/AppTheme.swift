@@ -38,6 +38,10 @@ enum AppTheme: String, CaseIterable, Displayable, Identifiable {
         self != .default
     }
 
+    func overlaysItemTopBar(in sizeClass: UserInterfaceSizeClass?) -> Bool {
+        self == .y2k || (self == .gameUI2 && sizeClass == .compact)
+    }
+
     var colorScheme: ColorScheme? {
         switch self {
         case .default:

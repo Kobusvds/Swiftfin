@@ -345,7 +345,77 @@ struct MacWindowControlsNavigationInset: UIViewRepresentable {
     }
 }
 
+/// Reports how far the Mac window controls reach into a view in the window's top row,
+/// for custom bars that draw their own leading items
+struct MacWindowControlsWidthReader: UIViewRepresentable {
+
+    let onChange: (CGFloat) -> Void
+
+    func makeUIView(context: Context) -> ReaderView {
+        ReaderView()
+    }
+
+    func updateUIView(_ uiView: ReaderView, context: Context) {
+        uiView.onChange = onChange
+        uiView.update()
+    }
+
+    final class ReaderView: UIView {
+
+        var onChange: ((CGFloat) -> Void)?
+        private var reportedWidth: CGFloat?
+
+        init() {
+            super.init(frame: .zero)
+            isUserInteractionEnabled = false
+        }
+
+        @available(*, unavailable)
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+            update()
+        }
+
+        override func layoutSubviews() {
+            super.layoutSubviews()
+            update()
+        }
+
+        func update() {
+            guard let window else { return }
+
+            let origin = convert(CGPoint.zero, to: window)
+            let isInTopRow = origin.y <= window.safeAreaInsets.top + 20
+            let width = isInTopRow ? max(0, MacWindowChrome.windowControlsWidth(in: window) - origin.x) : 0
+
+            guard width != reportedWidth else { return }
+            reportedWidth = width
+
+            let onChange = onChange
+            DispatchQueue.main.async {
+                onChange?(width)
+            }
+        }
+    }
+}
+
 extension View {
+
+    /// On Mac, reports the width the window controls cover at this view's leading edge
+    @ViewBuilder
+    func onMacWindowControlsWidthChange(_ action: @escaping (CGFloat) -> Void) -> some View {
+        if MacWindowChrome.isEnabled {
+            background {
+                MacWindowControlsWidthReader(onChange: action)
+            }
+        } else {
+            self
+        }
+    }
 
     /// On Mac, keeps the navigation bar's leading items clear of the window controls
     @ViewBuilder

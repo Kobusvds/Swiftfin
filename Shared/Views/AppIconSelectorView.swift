@@ -11,12 +11,19 @@ import SwiftUI
 struct AppIconSelectorView: View {
 
     @State
-    private var currentAppIcon = AppIcon.resolve(alternateIconName: UIApplication.shared.alternateIconName)
+    private var currentAppIcon = AppIcon.current
 
     @MainActor
     private func select(icon: AppIcon) async {
         let previousAppIcon = currentAppIcon
         currentAppIcon = icon
+
+        if MacDockIcon.isEnabled {
+            if !MacDockIcon.select(icon) {
+                currentAppIcon = previousAppIcon
+            }
+            return
+        }
 
         do {
             try await UIApplication.shared.setAlternateIconName(icon.alternateIconName)

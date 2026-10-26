@@ -18,48 +18,55 @@ struct ThemedNavigationBarModifier<MenuContent: View>: ViewModifier {
     @State
     private var collectedMenuGroups: [MenuContentGroup] = []
 
+    private let title: String?
     private let isEnabled: Bool
     private let isLoading: Bool
     private let isMenuHidden: Bool
     private let isGlowing: Bool
+    private let isOverlay: Bool
     private let menuContent: MenuContent
 
     init(
+        title: String?,
         isEnabled: Bool,
         isLoading: Bool,
         isMenuHidden: Bool,
         isGlowing: Bool,
+        isOverlay: Bool,
         @ViewBuilder menuContent: () -> MenuContent
     ) {
+        self.title = title
         self.isEnabled = isEnabled
         self.isLoading = isLoading
         self.isMenuHidden = isMenuHidden
         self.isGlowing = isGlowing
+        self.isOverlay = isOverlay
         self.menuContent = menuContent()
+    }
+
+    private var overlaysBar: Bool {
+        isOverlay && theme.overlaysItemTopBar(in: horizontalSizeClass)
     }
 
     func body(content: Content) -> some View {
         if theme.isThemed, isEnabled {
             content
                 .toolbar(.hidden, for: .navigationBar)
-                .toolbar(horizontalSizeClass == .regular ? .hidden : .automatic, for: .tabBar)
-                .themedTopInset(isScrollEdgeBar: theme == .y2k || theme == .gameUI2) {
-                    ThemedTopBar(isLoading: isLoading) {
+                .toolbar(.hidden, for: .tabBar)
+                .modifier(ThemedTabBarInset(isEnabled: horizontalSizeClass == .compact))
+                .themedTopInset(isOverlay: overlaysBar, isScrollEdgeBar: theme == .y2k || theme == .gameUI2) {
+                    ThemedTopBar(title: title, isLoading: isLoading, isOverlay: overlaysBar) {
                         menuContent
 
                         ForEach(collectedMenuGroups) { group in
                             group.content
                         }
-
-                        Divider()
-
-                        ThemePicker()
                     }
                 }
                 .background {
                     ThemedPageBackground(isGlowing: isGlowing)
                 }
-                .themedStatusBar(theme.colorScheme)
+                .themedStatusBar(overlaysBar ? .dark : theme.colorScheme)
                 .environment(\.colorScheme, theme.colorScheme ?? .dark)
                 .onPreferenceChange(MenuContentKey.self) { newGroups in
                     collectedMenuGroups = newGroups
@@ -71,10 +78,6 @@ struct ThemedNavigationBarModifier<MenuContent: View>: ViewModifier {
                     isHidden: isMenuHidden
                 ) {
                     menuContent
-
-                    Divider()
-
-                    ThemePicker()
                 }
         }
     }
@@ -83,10 +86,14 @@ struct ThemedNavigationBarModifier<MenuContent: View>: ViewModifier {
 private extension View {
 
     @ViewBuilder
-    func themedTopInset<Bar: View>(isScrollEdgeBar: Bool, @ViewBuilder bar: () -> Bar) -> some View {
+    func themedTopInset<Bar: View>(isOverlay: Bool, isScrollEdgeBar: Bool, @ViewBuilder bar: () -> Bar) -> some View {
         let bar = bar()
 
-        if #available(iOS 26, *), isScrollEdgeBar {
+        if isOverlay {
+            overlay(alignment: .top) {
+                bar
+            }
+        } else if #available(iOS 26, *), isScrollEdgeBar {
             safeAreaBar(edge: .top, spacing: 0) {
                 bar
             }

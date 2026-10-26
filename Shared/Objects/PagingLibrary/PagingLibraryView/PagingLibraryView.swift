@@ -25,6 +25,8 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
     @Default(.Customization.Library.style)
     private var defaultLibraryStyle
 
+    @Environment(\.appTheme)
+    private var appTheme
     @Environment(\.tabSafeAreaInsets)
     private var tabSafeAreaInsets
     #if os(iOS)
@@ -93,6 +95,10 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
         self._viewModel = StateObject(wrappedValue: PagingLibraryViewModel(library: library))
     }
 
+    private var isSkeuoOnPhone: Bool {
+        appTheme == .skeuo && UIDevice.isPhone
+    }
+
     private func contentInsets(for frame: FrameAndSafeAreaInsets) -> EdgeInsets {
         #if os(tvOS)
         // The collection disables automatic adjustment, so include both the local
@@ -101,7 +107,7 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
         insets.top = max(insets.top, tabSafeAreaInsets.top)
         return insets + EdgeInsets.itemSpacing
         #else
-        var insets: EdgeInsets = if isSafeAreaBarApplied {
+        var insets: EdgeInsets = if isSafeAreaBarApplied || appTheme.isThemed {
             frame.safeAreaInsets + EdgeInsets.itemSpacing
         } else {
             EdgeInsets(
@@ -116,6 +122,12 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
         if libraryStyle.displayType == .list {
             insets.leading = frame.safeAreaInsets.leading
             insets.trailing = frame.safeAreaInsets.trailing
+        }
+
+        if appTheme == .gameUI2 {
+            insets.top += 6
+        } else if isSkeuoOnPhone {
+            insets.top += 8
         }
 
         // Leave room for a header hosted above the items, such as filters
@@ -173,6 +185,11 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
             }
             #else
             .introspect(.scrollView, on: .iOS(.v18...)) { collectionView in
+                let adjustmentBehavior: UIScrollView.ContentInsetAdjustmentBehavior = isSkeuoOnPhone ? .never : .automatic
+                if collectionView.contentInsetAdjustmentBehavior != adjustmentBehavior {
+                    collectionView.contentInsetAdjustmentBehavior = adjustmentBehavior
+                }
+
                 // Host the header inside the grid so it scrolls natively with the items
                 if let header {
                     headerHost.attach(header, to: collectionView)
@@ -180,6 +197,7 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
                     headerHost.detach()
                 }
             }
+            .modifier(ThemedTabBarScrollObserver())
             #endif
             .ignoresSafeArea()
         }
@@ -243,6 +261,10 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
 
     @ViewBuilder
     private var menuContent: some View {
+        Button(L10n.random, systemImage: "dice.fill") {
+            viewModel.getRandomItem()
+        }
+
         if isLibraryStyleSectionVisible {
             LibraryStyleSection(
                 libraryStyle: storedLibraryStyleBinding,
@@ -251,10 +273,6 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
         }
 
         viewModel.library.makeMenuContent(environment: $viewModel.environment)
-
-        Button(L10n.random, systemImage: "dice.fill") {
-            viewModel.getRandomItem()
-        }
     }
 
     /// Whether the items grid is showing, which hosts the header itself
@@ -378,11 +396,13 @@ extension PagingLibraryView {
         }
         #if os(tvOS)
         .environmentObject(focusCoordinator)
+        .themedPage(isGlowing: true)
         #else
         .themedNavigationBar(
             isEnabled: !isShowingCoverFlow,
             isLoading: viewModel.background.is(.gettingNextPage) || viewModel.background.is(.gettingNextSearchPage),
-            isGlowing: true
+            isGlowing: true,
+            title: displayTitle ?? viewModel.library.parent.displayTitle
         ) {
             menuContent
         }

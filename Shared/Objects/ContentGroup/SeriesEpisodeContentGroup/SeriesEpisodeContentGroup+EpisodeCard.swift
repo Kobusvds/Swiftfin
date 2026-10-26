@@ -34,6 +34,7 @@ extension SeriesEpisodeContentGroup {
             EpisodeCardLayout(
                 header: episode.displayTitle,
                 subHeader: episode.episodeLocator ?? .emptyDash,
+                runtime: episode.runTimeLabel,
                 content: episodeContent,
                 artworkAction: {
                     guard let provider = episode.getPlaybackItemProvider(userSession: nil) else {
@@ -128,6 +129,7 @@ extension SeriesEpisodeContentGroup {
 
         let header: String
         let subHeader: String
+        let runtime: String?
         let content: String
         let artworkAction: () -> Void
         let contentAction: () -> Void
@@ -137,12 +139,13 @@ extension SeriesEpisodeContentGroup {
 
         private var contentAccessibilityLabel: String {
             let title = contextMenuItem?.posterAccessibility(configuration: posterConfiguration).label
-            return PosterAccessibility.joined([title ?? header, contextMenuItem == nil ? subHeader : nil, content])
+            return PosterAccessibility.joined([title ?? header, contextMenuItem == nil ? subHeader : nil, runtime, content])
         }
 
         init(
             header: String,
             subHeader: String,
+            runtime: String? = nil,
             content: String,
             artworkAction: @escaping () -> Void,
             contentAction: @escaping () -> Void,
@@ -151,6 +154,7 @@ extension SeriesEpisodeContentGroup {
         ) {
             self.header = header
             self.subHeader = subHeader
+            self.runtime = runtime
             self.content = content
             self.artworkAction = artworkAction
             self.contentAction = contentAction
@@ -219,6 +223,7 @@ extension SeriesEpisodeContentGroup {
                     EpisodeMetadataView(
                         header: header,
                         subHeader: subHeader,
+                        runtime: runtime,
                         content: content
                     )
                     .accessibilityElement(children: .ignore)
@@ -251,14 +256,25 @@ extension SeriesEpisodeContentGroup {
 
         let header: String
         let subHeader: String
+        let runtime: String?
         let content: String
 
         var body: some View {
             VStack(alignment: .leading, spacing: 4) {
-                Text(subHeader)
-                    .themedText(.episodeLocator, defaultFont: .caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                HStack(spacing: 8) {
+                    Text(subHeader)
+                        .lineLimit(1)
+
+                    Spacer(minLength: 0)
+
+                    if let runtime {
+                        Text(runtime)
+                            .lineLimit(1)
+                            .layoutPriority(1)
+                    }
+                }
+                .themedText(.episodeLocator, defaultFont: .caption)
+                .foregroundStyle(.secondary)
 
                 Text(header)
                     .themedText(.episodeTitle, defaultFont: .headline)

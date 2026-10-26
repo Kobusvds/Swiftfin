@@ -15,6 +15,8 @@ struct ThemedTopBar<MenuContent: View>: View {
     private var theme
     @Environment(\.horizontalSizeClass)
     private var horizontalSizeClass
+    @Environment(\.parentRouteTitle)
+    private var parentRouteTitle
     @Environment(\.tabCoordinator)
     private var tabCoordinator
 
@@ -24,10 +26,22 @@ struct ThemedTopBar<MenuContent: View>: View {
     @Router
     private var router
 
+    @State
+    private var macWindowControlsWidth: CGFloat = 0
+
+    let title: String?
     let isLoading: Bool
+    let isOverlay: Bool
     let menuContent: MenuContent
 
-    init(isLoading: Bool, @ViewBuilder menuContent: () -> MenuContent) {
+    init(
+        title: String? = nil,
+        isLoading: Bool,
+        isOverlay: Bool = false,
+        @ViewBuilder menuContent: () -> MenuContent
+    ) {
+        self.title = title
+        self.isOverlay = isOverlay
         self.isLoading = isLoading
         self.menuContent = menuContent()
     }
@@ -38,18 +52,25 @@ struct ThemedTopBar<MenuContent: View>: View {
             .item.displayTitle ?? L10n.back
     }
 
+    /// On phones the item hero bar drops its chrome and only shows the buttons
+    private var isBareOverlay: Bool {
+        isOverlay && horizontalSizeClass == .compact
+    }
+
     var body: some View {
         HStack(spacing: 10) {
             Group {
                 if router.isRootOfPath {
                     ThemedWordmark()
                 } else {
-                    ThemedBackButton(title: backTitle) {
+                    ThemedBackButton(title: backTitle, pageTitle: title ?? parentRouteTitle, isOverlay: isBareOverlay) {
                         router.dismiss()
                     }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            // Without a centered tab switcher, let the title use the space the trailing buttons don't need
+            .layoutPriority(horizontalSizeClass == .regular ? 0 : 1)
 
             if horizontalSizeClass == .regular, let tabCoordinator {
                 ThemedTabSwitcher(tabCoordinator: tabCoordinator)
@@ -62,14 +83,20 @@ struct ThemedTopBar<MenuContent: View>: View {
                 }
 
                 if router.isRootOfPath, let userSession {
-                    ThemedAvatar {
-                        SettingsBarButton(
-                            server: userSession.server,
-                            user: userSession.user
-                        ) {
-                            router.route(to: .settings)
+                    Button {
+                        router.route(to: .settings)
+                    } label: {
+                        ThemedAvatar {
+                            UserProfileImage(
+                                userID: userSession.user.id,
+                                source: userSession.user.profileImageSource(
+                                    client: userSession.server.client
+                                ),
+                                pipeline: .Swiftfin.local
+                            )
                         }
                     }
+                    .accessibilityLabel(L10n.settings)
                 }
 
                 Menu {
@@ -82,7 +109,10 @@ struct ThemedTopBar<MenuContent: View>: View {
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .buttonStyle(.plain)
-        .modifier(ThemedTopBarFrame())
+        .modifier(ThemedTopBarFrame(windowControlsWidth: macWindowControlsWidth, isOverlay: isBareOverlay))
+        .onMacWindowControlsWidthChange { width in
+            macWindowControlsWidth = width
+        }
     }
 }
 
@@ -91,12 +121,22 @@ private struct ThemedTopBarFrame: ViewModifier {
     @Environment(\.appTheme)
     private var theme
 
+    let windowControlsWidth: CGFloat
+    let isOverlay: Bool
+
+    private func leadingInset(outerPadding: CGFloat) -> CGFloat {
+        guard windowControlsWidth > 0 else { return 0 }
+
+        return max(0, windowControlsWidth + 10 - outerPadding)
+    }
+
     func body(content: Content) -> some View {
         switch theme {
         case .default:
             content
         case .skeuo:
             content
+                .padding(.leading, leadingInset(outerPadding: 13))
                 .padding(.horizontal, 5)
                 .frame(height: 52)
                 .overlay {
@@ -123,6 +163,15 @@ private struct ThemedTopBarFrame: ViewModifier {
                         .shadow(color: .black.opacity(0.55), radius: 3, y: 2)
                         .ignoresSafeArea(edges: .horizontal)
                 }
+        case .y2k where isOverlay:
+            // Floating over the item hero, only the orb buttons are shown
+            content
+                .padding(.horizontal, 5)
+                .frame(height: 56)
+                .padding(.horizontal, 22)
+                .padding(.leading, leadingInset(outerPadding: 22))
+                .padding(.top, 8)
+                .padding(.bottom, 4)
         case .y2k:
             content
                 .padding(.horizontal, 5)
@@ -142,12 +191,14 @@ private struct ThemedTopBarFrame: ViewModifier {
                 }
                 .shadow(color: Y2K.shadow.opacity(0.3), radius: 4, y: 3)
                 .padding(.horizontal, 22)
+                .padding(.leading, leadingInset(outerPadding: 22))
                 .padding(.top, 8)
                 .padding(.bottom, 4)
         case .gameUI2:
             content
                 .frame(height: 52)
                 .padding(.horizontal, 22)
+                .padding(.leading, leadingInset(outerPadding: 22))
                 .padding(.top, 8)
                 .padding(.bottom, 4)
         }
@@ -237,6 +288,9 @@ private struct ThemedBackButton: View {
     private var theme
 
     let title: String
+    /// Title of the current page, shown by themes whose back button doesn't name the destination
+    let pageTitle: String?
+    let isOverlay: Bool
     let action: () -> Void
 
     var body: some View {
@@ -263,7 +317,17 @@ private struct ThemedBackButton: View {
                         .foregroundStyle(Y2K.navy)
                         .y2kOrb(Y2K.blueOrb, edge: Y2K.blueOrbEdge)
 
-                    Y2KWordmarkText(size: 20)
+                    if isOverlay {
+                        EmptyView()
+                    } else if let pageTitle {
+                        Text(pageTitle)
+                            .font(Y2K.title(20))
+                            .kerning(0.8)
+                            .foregroundStyle(Y2K.navy)
+                            .lineLimit(1)
+                    } else {
+                        Y2KWordmarkText(size: 20)
+                    }
                 }
                 .contentShape(.rect)
             case .gameUI2:
@@ -312,18 +376,18 @@ private struct ThemedAvatar<Content: View>: View {
                 .shadow(color: Y2K.shadow.opacity(0.35), radius: 2.5, y: 2)
         case .gameUI2:
             content
-                .frame(width: 42, height: 42)
+                .frame(width: 40, height: 40)
                 .clipShape(.circle)
                 .overlay {
                     Circle()
                         .strokeBorder(GameUI.outline, lineWidth: 3)
                 }
-                .frame(width: 48, height: 48)
                 .background {
                     Circle()
                         .fill(GameUI.outline)
                         .offset(y: 4)
                 }
+                .padding(.bottom, 4)
         }
     }
 }
@@ -384,10 +448,11 @@ struct ThemedTabSwitcher: View {
         HStack(spacing: tabSpacing) {
             ForEach(Array(tabs.enumerated()), id: \.element.item.id) { index, tab in
                 Button {
-                    tabCoordinator.selectedTabID = tab.item.id
+                    tabCoordinator.select(tabID: tab.item.id)
                 } label: {
                     ThemedTabLabel(
                         title: tab.item.displayTitle,
+                        systemImage: tab.item.systemImage,
                         isSelected: tab.item.id == tabCoordinator.selectedTabID,
                         isFirst: index == 0,
                         isLast: index == tabs.count - 1
@@ -418,9 +483,19 @@ private struct ThemedTabLabel: View {
     private var theme
 
     let title: String
+    let systemImage: String
     let isSelected: Bool
     let isFirst: Bool
     let isLast: Bool
+
+    private func label(iconSize: CGFloat) -> some View {
+        HStack(spacing: 8) {
+            ThemedTabIcon(systemImage: systemImage, size: iconSize)
+                .accessibilityHidden(true)
+
+            Text(title)
+        }
+    }
 
     private var shape: UnevenRoundedRectangle {
         UnevenRoundedRectangle(
@@ -436,7 +511,7 @@ private struct ThemedTabLabel: View {
         case .default:
             Text(title)
         case .skeuo:
-            Text(title)
+            label(iconSize: 18)
                 .font(Skeuo.font(16, .bold))
                 .foregroundStyle(isSelected ? Skeuo.amberText : Skeuo.cream)
                 .shadow(
@@ -465,7 +540,7 @@ private struct ThemedTabLabel: View {
                 }
                 .contentShape(shape)
         case .y2k:
-            Text(title)
+            label(iconSize: 18)
                 .font(Y2K.font(16, .semibold))
                 .foregroundStyle(isSelected ? Y2K.lime : Y2K.navy)
                 .shadow(color: .white.opacity(isSelected ? 0 : 0.6), radius: 0, y: 1)
@@ -495,7 +570,7 @@ private struct ThemedTabLabel: View {
         case .gameUI2:
             let shape = RoundedRectangle(cornerRadius: 12)
 
-            Text(title)
+            label(iconSize: 20)
                 .font(GameUI.title(18))
                 .foregroundStyle(isSelected ? GameUI.outline : .white)
                 .modifier(GameTabTextOutline(isEnabled: !isSelected))
@@ -518,7 +593,7 @@ private struct ThemedTabLabel: View {
     }
 }
 
-private struct GameTabTextOutline: ViewModifier {
+struct GameTabTextOutline: ViewModifier {
 
     let isEnabled: Bool
 
@@ -625,23 +700,5 @@ struct BackArrowShape: InsettableShape {
         var shape = self
         shape.inset += amount
         return shape
-    }
-}
-
-struct ThemePicker: View {
-
-    @AppStorage(AppTheme.storageKey)
-    private var theme: AppTheme = .default
-
-    var body: some View {
-        Picker(selection: $theme) {
-            ForEach(AppTheme.allCases) { theme in
-                Text(theme.displayTitle)
-                    .tag(theme)
-            }
-        } label: {
-            Label(L10n.theme, systemImage: "paintpalette")
-        }
-        .pickerStyle(.menu)
     }
 }

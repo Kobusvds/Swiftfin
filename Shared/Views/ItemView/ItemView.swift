@@ -170,10 +170,12 @@ struct ItemView: View {
         .errorMessage($provider.actionError)
         #if os(tvOS)
         .toolbarVisibility(.hidden, for: .navigationBar)
+        .themedPage()
         #else
         .themedNavigationBar(
             isLoading: viewModel.background.is(.refreshing),
-            isMenuHidden: overflow.isEmpty && menu.isEmpty && provider.item.type != .boxSet
+            isMenuHidden: overflow.isEmpty && menu.isEmpty && provider.item.type != .boxSet,
+            isOverlay: true
         ) {
             ItemActionButtons.MenuContent(
                 provider: provider,

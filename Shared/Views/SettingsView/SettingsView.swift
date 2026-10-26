@@ -21,6 +21,9 @@ struct SettingsView: View {
     @Default(.userAccentColor)
     private var accentColor
 
+    @AppStorage(AppTheme.storageKey)
+    private var appTheme: AppTheme = .default
+
     @InjectedObject(\.userSessionManager)
     private var userSessionManager: UserSessionManager
 
@@ -116,12 +119,16 @@ struct SettingsView: View {
     private var customizeSection: some View {
         Section {
             #if os(iOS)
+            Picker(L10n.theme, selection: $appTheme)
+
             Picker(L10n.appearance, selection: $appearance)
+            #else
+            ListRowMenu(L10n.theme, selection: $appTheme)
             #endif
 
             ColorPicker(L10n.accentColor, selection: $accentColor, supportsOpacity: false)
 
-            if UIApplication.shared.supportsAlternateIcons {
+            if AppIcon.isSelectable {
                 ChevronButton(L10n.appIcon) {
                     router.route(to: .appIconSelector)
                 }

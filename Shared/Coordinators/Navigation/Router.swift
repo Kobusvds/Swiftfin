@@ -99,6 +99,10 @@ struct Router: DynamicProperty {
 
 extension EnvironmentValues {
 
+    /// Title of the page this one was pushed from, if that page has one
+    @Entry
+    var parentRouteTitle: String? = nil
+
     @Entry
     var router: NavigationCoordinator.Router = .init(
         navigationCoordinator: nil,

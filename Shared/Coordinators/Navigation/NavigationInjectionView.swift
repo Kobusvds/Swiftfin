@@ -40,6 +40,11 @@ struct NavigationInjectionView: View {
         self.content = AnyView(content())
     }
 
+    private func parentTitle(of route: NavigationRoute) -> String? {
+        guard let index = coordinator.path.firstIndex(of: route), index > 0 else { return nil }
+        return coordinator.path[index - 1].title
+    }
+
     var body: some View {
         NavigationStack(path: $coordinator.path) {
             content
@@ -58,6 +63,7 @@ struct NavigationInjectionView: View {
                                 isRootOfPath: false
                             )
                         )
+                        .environment(\.parentRouteTitle, parentTitle(of: route))
                 }
         }
         .trackingFrame(for: .navigationStack)
