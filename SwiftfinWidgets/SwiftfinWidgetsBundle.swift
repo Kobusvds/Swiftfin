@@ -15,5 +15,6 @@ struct SwiftfinWidgetsBundle: WidgetBundle {
     var body: some Widget {
         ContinueWatchingWidget()
         LibrariesWidget()
+        RandomPickWidget()
     }
 }

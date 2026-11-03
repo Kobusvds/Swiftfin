@@ -36,6 +36,7 @@ enum WidgetSharedStore {
     enum WidgetKind {
         static let continueWatching = "org.jellyfin.swiftfin.widget.continue-watching"
         static let libraries = "org.jellyfin.swiftfin.widget.libraries"
+        static let randomPick = "org.jellyfin.swiftfin.widget.random-pick"
     }
 
     private enum Key {

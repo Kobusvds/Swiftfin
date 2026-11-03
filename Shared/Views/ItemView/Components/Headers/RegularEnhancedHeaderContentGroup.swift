@@ -25,6 +25,9 @@ extension ItemView {
             @Environment(\.appTheme)
             private var theme
 
+            @Router
+            private var router
+
             @ObservedObject
             var provider: ItemContentGroupProvider
 
@@ -51,6 +54,23 @@ extension ItemView {
             private var logoHeight: CGFloat {
                 UIDevice.isTV ? 100 : 70
             }
+
+            #if os(iOS)
+            /// Movies and series open their portrait artwork from the hero image
+            @ViewBuilder
+            private var posterTapArea: some View {
+                if provider.item.type == .movie || provider.item.type == .series {
+                    Color.clear
+                        .contentShape(.rect)
+                        .onTapGesture {
+                            router.route(to: .itemPoster(item: provider.item))
+                        }
+                        .accessibilityElement()
+                        .accessibilityLabel(provider.item.displayTitle)
+                        .accessibilityAddTraits(.isButton)
+                }
+            }
+            #endif
 
             @ViewBuilder
             private var logo: some View {
@@ -210,6 +230,9 @@ extension ItemView {
                         .edgePadding(.horizontal)
                         .frame(maxWidth: .infinity)
                         .colorScheme(.dark)
+                }
+                .background {
+                    posterTapArea
                 }
                 .backgroundParallaxHeader(multiplier: 0.3) {
                     StateAdapter(initialValue: Color.secondarySystemFill) { resolvedColor in

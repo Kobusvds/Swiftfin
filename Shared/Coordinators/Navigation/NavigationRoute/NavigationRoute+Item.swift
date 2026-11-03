@@ -225,6 +225,16 @@ extension NavigationRoute {
         }
     }
 
+    /// Full screen on iPhone, a sheet on iPad and Mac
+    static func itemPoster(item: BaseItemDto) -> NavigationRoute {
+        NavigationRoute(
+            id: "itemPoster",
+            style: UIDevice.isPhone ? .fullscreen : .sheet
+        ) {
+            ItemPosterView(item: item)
+        }
+    }
+
     static func remoteImageSearch(viewModel: ItemImageViewModel, imageType: ImageType) -> NavigationRoute {
         NavigationRoute(
             id: "remoteImageSearch",

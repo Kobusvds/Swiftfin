@@ -23,6 +23,9 @@ extension ItemView {
 
         struct Body: View {
 
+            @Router
+            private var router
+
             @ObservedObject
             var provider: ItemContentGroupProvider
 
@@ -36,6 +39,23 @@ extension ItemView {
             private var headerAspectRatio: CGFloat {
                 provider.item.type == .movie || provider.item.type == .series ? imageAspectRatio / 0.75 : imageAspectRatio
             }
+
+            #if os(iOS)
+            /// Movies and series open their portrait artwork from the hero image
+            @ViewBuilder
+            private var posterTapArea: some View {
+                if provider.item.type == .movie || provider.item.type == .series {
+                    Color.clear
+                        .contentShape(.rect)
+                        .onTapGesture {
+                            router.route(to: .itemPoster(item: provider.item))
+                        }
+                        .accessibilityElement()
+                        .accessibilityLabel(provider.item.displayTitle)
+                        .accessibilityAddTraits(.isButton)
+                }
+            }
+            #endif
 
             @ViewBuilder
             private var logo: some View {
@@ -74,6 +94,11 @@ extension ItemView {
                         logo
                             .themedQuickLoadEntrance(ThemedQuickLoadStagger.title)
                     }
+                    #if os(iOS)
+                    .background {
+                        posterTapArea
+                    }
+                    #endif
                     .zIndex(10)
 
                     VStack(alignment: .center, spacing: 10) {

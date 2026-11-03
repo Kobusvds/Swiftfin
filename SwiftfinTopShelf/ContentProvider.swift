@@ -14,8 +14,18 @@ class ContentProvider: TVTopShelfContentProvider {
     private static let itemLimit = 12
 
     override func loadTopShelfContent() async -> (any TVTopShelfContent)? {
+        TopShelfDiagnostics.record(
+            "load started, account: \(WidgetSharedStore.account != nil), token: \(WidgetSharedStore.accessToken != nil)"
+        )
+
         // Signed out, so the system shows the static top shelf image
-        guard let content = try? await TopShelfClient.content(limit: Self.itemLimit) else { return nil }
+        let content: TopShelfClient.Content
+        do {
+            content = try await TopShelfClient.content(limit: Self.itemLimit)
+        } catch {
+            TopShelfDiagnostics.record("load failed: \(error)")
+            return nil
+        }
 
         let sections = [
             section(
@@ -35,6 +45,10 @@ class ContentProvider: TVTopShelfContentProvider {
             ),
         ]
         .compactMap(\.self)
+
+        TopShelfDiagnostics.record(
+            "load finished: \(content.continueWatching.count) resume, \(content.nextUp.count) next up, \(content.recentlyAdded.count) latest"
+        )
 
         guard sections.isNotEmpty else { return nil }
 

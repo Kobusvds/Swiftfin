@@ -130,7 +130,7 @@ enum ContinueWatchingClient {
         return downsampled(data, maxPixelSize: pixelWidth)
     }
 
-    private static func request(
+    static func request(
         url: URL,
         account: WidgetSharedStore.Account,
         accessToken: String
@@ -152,7 +152,7 @@ enum ContinueWatchingClient {
         return request
     }
 
-    private static func send(_ request: URLRequest) async throws -> Data {
+    static func send(_ request: URLRequest) async throws -> Data {
         let (data, response) = try await URLSession.shared.data(for: request)
 
         guard let response = response as? HTTPURLResponse, (200 ..< 300).contains(response.statusCode) else {
@@ -163,7 +163,7 @@ enum ContinueWatchingClient {
     }
 
     /// Widgets have a small memory budget, so keep only a small JPEG
-    private static func downsampled(_ data: Data, maxPixelSize: Int) -> Data? {
+    static func downsampled(_ data: Data, maxPixelSize: Int) -> Data? {
         let options: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceCreateThumbnailWithTransform: true,
