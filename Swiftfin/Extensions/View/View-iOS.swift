@@ -63,6 +63,7 @@ extension View {
     @ViewBuilder
     func themedNavigationBar(
         isEnabled: Bool = true,
+        isBarHidden: Bool = false,
         isLoading: Bool = false,
         isMenuHidden: Bool = false,
         isGlowing: Bool = false,
@@ -75,6 +76,7 @@ extension View {
             ThemedNavigationBarModifier(
                 title: title,
                 isEnabled: isEnabled,
+                isBarHidden: isBarHidden,
                 isLoading: isLoading,
                 isMenuHidden: isMenuHidden,
                 isGlowing: isGlowing,

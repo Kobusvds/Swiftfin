@@ -9,22 +9,31 @@
 import TVServices
 
 /// Shows Continue Watching, Up Next, and Recently Added rows in the Apple TV top shelf
+@objc(ContentProvider)
 class ContentProvider: TVTopShelfContentProvider {
 
     private static let itemLimit = 12
 
+    override init() {
+        super.init()
+        TopShelfDiagnostics.record(.created)
+    }
+
     override func loadTopShelfContent() async -> (any TVTopShelfContent)? {
-        TopShelfDiagnostics.record(
-            "load started, account: \(WidgetSharedStore.account != nil), token: \(WidgetSharedStore.accessToken != nil)"
-        )
+        TopShelfDiagnostics.record(.started)
+        TopShelfDiagnostics.record(WidgetSharedStore.account != nil ? .hasAccount : .noAccount)
+        TopShelfDiagnostics.record(WidgetSharedStore.accessToken != nil ? .hasToken : .noToken)
+
+        // TEMPORARY: a row whose title shows what the extension found, visible even if the app group is unreachable
+        let status = "Diagnostics · account \(WidgetSharedStore.account != nil ? "yes" : "no") · token \(WidgetSharedStore.accessToken != nil ? "yes" : "no")"
 
         // Signed out, so the system shows the static top shelf image
         let content: TopShelfClient.Content
         do {
             content = try await TopShelfClient.content(limit: Self.itemLimit)
         } catch {
-            TopShelfDiagnostics.record("load failed: \(error)")
-            return nil
+            TopShelfDiagnostics.record(.failed, "\(error)")
+            return diagnosticsContent(title: "\(status) · error \(error)")
         }
 
         let sections = [
@@ -47,12 +56,27 @@ class ContentProvider: TVTopShelfContentProvider {
         .compactMap(\.self)
 
         TopShelfDiagnostics.record(
-            "load finished: \(content.continueWatching.count) resume, \(content.nextUp.count) next up, \(content.recentlyAdded.count) latest"
+            sections.isEmpty ? .empty : .finished,
+            "\(content.continueWatching.count) resume, \(content.nextUp.count) next up, \(content.recentlyAdded.count) latest"
         )
 
-        guard sections.isNotEmpty else { return nil }
+        guard sections.isNotEmpty else {
+            return diagnosticsContent(title: "\(status) · no items")
+        }
 
         return TVTopShelfSectionedContent(sections: sections)
+    }
+
+    /// TEMPORARY: a single placeholder row titled with the diagnostics status
+    private func diagnosticsContent(title: String) -> TVTopShelfContent {
+        let item = TVTopShelfSectionedItem(identifier: "diagnostics")
+        item.title = title
+        item.imageShape = .hdtv
+
+        let collection = TVTopShelfItemCollection(items: [item])
+        collection.title = title
+
+        return TVTopShelfSectionedContent(sections: [collection])
     }
 
     private func section(

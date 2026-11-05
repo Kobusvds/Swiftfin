@@ -20,6 +20,7 @@ struct ThemedNavigationBarModifier<MenuContent: View>: ViewModifier {
 
     private let title: String?
     private let isEnabled: Bool
+    private let isBarHidden: Bool
     private let isLoading: Bool
     private let isMenuHidden: Bool
     private let isGlowing: Bool
@@ -29,6 +30,7 @@ struct ThemedNavigationBarModifier<MenuContent: View>: ViewModifier {
     init(
         title: String?,
         isEnabled: Bool,
+        isBarHidden: Bool,
         isLoading: Bool,
         isMenuHidden: Bool,
         isGlowing: Bool,
@@ -37,6 +39,7 @@ struct ThemedNavigationBarModifier<MenuContent: View>: ViewModifier {
     ) {
         self.title = title
         self.isEnabled = isEnabled
+        self.isBarHidden = isBarHidden
         self.isLoading = isLoading
         self.isMenuHidden = isMenuHidden
         self.isGlowing = isGlowing
@@ -55,11 +58,13 @@ struct ThemedNavigationBarModifier<MenuContent: View>: ViewModifier {
                 .toolbar(.hidden, for: .tabBar)
                 .modifier(ThemedTabBarInset(isEnabled: horizontalSizeClass == .compact))
                 .themedTopInset(isOverlay: overlaysBar, isScrollEdgeBar: theme == .y2k || theme == .gameUI2) {
-                    ThemedTopBar(title: title, isLoading: isLoading, isOverlay: overlaysBar) {
-                        menuContent
+                    if !isBarHidden {
+                        ThemedTopBar(title: title, isLoading: isLoading, isOverlay: overlaysBar) {
+                            menuContent
 
-                        ForEach(collectedMenuGroups) { group in
-                            group.content
+                            ForEach(collectedMenuGroups) { group in
+                                group.content
+                            }
                         }
                     }
                 }

@@ -24,9 +24,6 @@ struct ItemView: View {
     @Default(.Customization.itemViewType)
     private var itemViewType
 
-    @Environment(\.appTheme)
-    private var theme
-
     @Router
     private var router
 
@@ -73,14 +70,6 @@ struct ItemView: View {
         case .simple:
             return false
         }
-    }
-
-    private var isQuickLoadEnabled: Bool {
-        #if os(iOS)
-        theme.supportsQuickLoad && (provider.item.type == .movie || provider.item.type == .series)
-        #else
-        false
-        #endif
     }
 
     private var contentGroups: [any ContentGroup] {
@@ -145,21 +134,11 @@ struct ItemView: View {
             case .error:
                 viewModel.error.map(ErrorView.init)
             case .initial, .refreshing:
-                if isQuickLoadEnabled {
-                    Color.clear
-                } else {
-                    ProgressView()
-                }
+                ProgressView()
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .trackingSize($contentSize)
-        .themedQuickLoad(
-            isEnabled: isQuickLoadEnabled,
-            isReady: viewModel.state == .content,
-            isFailed: viewModel.state == .error,
-            isCompact: isCompact,
-            title: provider.item.displayTitle
-        )
         .animation(.linear(duration: 0.2), value: viewModel.state)
         .animation(.linear(duration: 0.2), value: viewModel.background.states)
         .toolbarTitleDisplayMode(.inline)
@@ -195,6 +174,7 @@ struct ItemView: View {
         .themedPage()
         #else
         .themedNavigationBar(
+            isBarHidden: viewModel.state == .initial || viewModel.state == .refreshing,
             isLoading: viewModel.background.is(.refreshing),
             isMenuHidden: overflow.isEmpty && menu.isEmpty && provider.item.type != .boxSet,
             isOverlay: true
