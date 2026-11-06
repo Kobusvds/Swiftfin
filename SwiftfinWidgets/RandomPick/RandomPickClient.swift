@@ -55,8 +55,8 @@ enum RandomPickClient {
             .map { RandomPickLibrary(id: $0.id, name: $0.name ?? "") }
     }
 
-    /// A random movie or show from the library, avoiding the one shown last when possible
-    static func randomItem(libraryID: String, imagePixelWidth: Int) async throws -> RandomPickItem? {
+    /// Distinct random movies or shows from the library, avoiding the ones shown last when possible
+    static func randomItems(libraryID: String, count: Int, imagePixelWidth: Int) async throws -> [RandomPickItem] {
         let (account, accessToken) = try credentials()
 
         let url = account.serverURL.appending(path: "Items").appending(queryItems: [
@@ -65,8 +65,8 @@ enum RandomPickClient {
             .init(name: "recursive", value: "true"),
             .init(name: "includeItemTypes", value: "Movie,Series"),
             .init(name: "sortBy", value: "Random"),
-            // A second item lets the dice avoid repeating the current pick
-            .init(name: "limit", value: "2"),
+            // Extra items let the dice avoid repeating the current picks
+            .init(name: "limit", value: "\(count * 2)"),
             .init(name: "enableImageTypes", value: "Primary,Backdrop,Thumb"),
             .init(name: "imageTypeLimit", value: "1"),
         ])
@@ -76,29 +76,48 @@ enum RandomPickClient {
         )
         let response = try JSONDecoder().decode(ItemsResponse.self, from: data)
 
-        let lastPickKey = "randomPick.last.\(libraryID)"
-        let lastPickID = UserDefaults.standard.string(forKey: lastPickKey)
+        let lastPicksKey = "randomPick.lastPicks.\(libraryID)"
+        let lastPickIDs = Set(UserDefaults.standard.stringArray(forKey: lastPicksKey) ?? [])
 
-        guard let item = response.items.first(where: { $0.id != lastPickID }) ?? response.items.first else {
-            return nil
+        // Prefer items that weren't just shown, topping up with repeats in small libraries
+        let freshItems = response.items.filter { !lastPickIDs.contains($0.id) }
+        let repeatedItems = response.items.filter { lastPickIDs.contains($0.id) }
+        let pickedItems = Array((freshItems + repeatedItems).prefix(count))
+
+        guard !pickedItems.isEmpty else { return [] }
+
+        UserDefaults.standard.set(pickedItems.map(\.id), forKey: lastPicksKey)
+
+        // Load artwork concurrently, keeping the picked order
+        let imageData = await withTaskGroup(of: (Int, Data?).self) { group in
+            for (index, item) in pickedItems.enumerated() {
+                group.addTask {
+                    let data = await imageData(
+                        for: item,
+                        account: account,
+                        accessToken: accessToken,
+                        pixelWidth: imagePixelWidth
+                    )
+                    return (index, data)
+                }
+            }
+
+            var imageData = [Data?](repeating: nil, count: pickedItems.count)
+            for await (index, data) in group {
+                imageData[index] = data
+            }
+            return imageData
         }
 
-        UserDefaults.standard.set(item.id, forKey: lastPickKey)
-
-        let imageData = await imageData(
-            for: item,
-            account: account,
-            accessToken: accessToken,
-            pixelWidth: imagePixelWidth
-        )
-
-        return RandomPickItem(
-            id: item.id,
-            title: item.name ?? "",
-            subtitle: item.productionYear.map(String.init),
-            imageData: imageData,
-            url: WidgetSharedStore.url(account: account, destination: "item", id: item.id)
-        )
+        return zip(pickedItems, imageData).map { item, imageData in
+            RandomPickItem(
+                id: item.id,
+                title: item.name ?? "",
+                subtitle: item.productionYear.map(String.init),
+                imageData: imageData,
+                url: WidgetSharedStore.url(account: account, destination: "item", id: item.id)
+            )
+        }
     }
 
     // MARK: - Requests

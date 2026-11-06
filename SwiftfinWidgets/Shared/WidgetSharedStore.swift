@@ -46,22 +46,23 @@ enum WidgetSharedStore {
         static let accessTokenAccount = "accessToken"
     }
 
-    /// `group.<app bundle identifier>`, resolved the same way from the app and its extensions
-    static let appGroupID: String = {
+    /// The app's bundle identifier, resolved the same way from the app and its extensions
+    private static let appBundleID: String = {
         let bundleID = Bundle.main.bundleIdentifier ?? ""
 
         guard Bundle.main.bundleURL.pathExtension == "appex" else {
-            return "group.\(bundleID)"
+            return bundleID
         }
 
         // Extension bundle identifiers are `<app bundle identifier>.<extension name>`
-        let appBundleID = bundleID
+        return bundleID
             .split(separator: ".")
             .dropLast()
             .joined(separator: ".")
-
-        return "group.\(appBundleID)"
     }()
+
+    /// `group.<app bundle identifier>`
+    static let appGroupID = "group.\(appBundleID)"
 
     private static var defaults: UserDefaults? {
         UserDefaults(suiteName: appGroupID)
@@ -143,7 +144,16 @@ enum WidgetSharedStore {
         destination: String,
         id: String
     ) -> URL? {
-        URL(string: "swiftfin://\(account.serverID)/\(account.userID)/\(destination)/\(id)")
+        #if os(iOS)
+        // Other installed Swiftfin or Jellyfin apps also claim `swiftfin://`, and widget
+        // `Link`s open whichever app iOS picks for the scheme. The app's bundle identifier
+        // is a scheme only this app registers, so links always open this app.
+        let scheme = appBundleID
+        #else
+        let scheme = "swiftfin"
+        #endif
+
+        return URL(string: "\(scheme)://\(account.serverID)/\(account.userID)/\(destination)/\(id)")
     }
 
     static func clear() {

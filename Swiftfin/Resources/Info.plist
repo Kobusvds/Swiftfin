@@ -27,6 +27,7 @@
 			<array>
 				<string>swiftfin</string>
 				<string>jellyfin</string>
+				<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 			</array>
 		</dict>
 	</array>

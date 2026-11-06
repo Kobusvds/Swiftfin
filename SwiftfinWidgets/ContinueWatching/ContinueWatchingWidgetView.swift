@@ -151,14 +151,13 @@ private struct ItemTile: View {
 
     private var content: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Color.clear
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .overlay {
+            // The progress bar is the base, with the artwork behind it. Widgets drop a `Link`
+            // whose label has a `Color` with the artwork in an overlay, so tapping wouldn't open the item.
+            ProgressBar(progress: item.progress)
+                .padding(6)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                .background {
                     ItemArtwork(item: item)
-                }
-                .overlay(alignment: .bottom) {
-                    ProgressBar(progress: item.progress)
-                        .padding(6)
                 }
                 .clipShape(.rect(cornerRadius: 8))
 
@@ -188,9 +187,9 @@ private struct ItemArtwork: View {
 
     var body: some View {
         if let image = item.image {
+            // No `widgetAccentedRenderingMode`, which stops grid tiles' `Link`s from opening the item
             Image(uiImage: image)
                 .resizable()
-                .widgetAccentedRenderingMode(.accentedDesaturated)
                 .scaledToFill()
         } else {
             LinearGradient(

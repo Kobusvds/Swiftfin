@@ -27,9 +27,11 @@ struct DeepLink: Equatable {
     let userID: String
     let destination: Destination
 
+    /// Accepts `swiftfin://`, `jellyfin://`, and the app's bundle identifier scheme used by widgets.
+    /// The app only receives links for the schemes it registers, so any scheme is matched here.
     init?(_ url: URL) {
         guard let match = url.absoluteString.wholeMatch(
-            of: /^(?:swiftfin|jellyfin):\/\/(?<serverID>[A-Za-z0-9-]+)\/(?<userID>[A-Za-z0-9-]+)\/(?<destinationType>item|library|play|tab)\/(?<destinationID>[A-Za-z0-9-]+)\/?$/
+            of: /^[A-Za-z][A-Za-z0-9+.\-]*:\/\/(?<serverID>[A-Za-z0-9-]+)\/(?<userID>[A-Za-z0-9-]+)\/(?<destinationType>item|library|play|tab)\/(?<destinationID>[A-Za-z0-9-]+)\/?$/
         ) else { return nil }
 
         self.serverID = String(match.output.serverID)
