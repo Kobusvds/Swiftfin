@@ -14,21 +14,38 @@ struct SettingsBarButton: View {
     let user: UserState
     let action: () -> Void
 
-    var body: some View {
-        Button(action: action) {
-            AlternateLayoutView {
-                // Seems necessary for button layout
-                Image(systemName: "gearshape.fill")
-            } content: {
-                UserProfileImage(
-                    userID: user.id,
-                    source: user.profileImageSource(
-                        client: server.client
-                    ),
-                    pipeline: .Swiftfin.local
-                )
-            }
+    private var profileImage: some View {
+        AlternateLayoutView {
+            // Seems necessary for button layout
+            Image(systemName: "gearshape.fill")
+        } content: {
+            UserProfileImage(
+                userID: user.id,
+                source: user.profileImageSource(
+                    client: server.client
+                ),
+                pipeline: .Swiftfin.local
+            )
         }
-        .accessibilityLabel(L10n.settings)
+    }
+
+    var body: some View {
+        if ProcessInfo.processInfo.isiOSAppOnMac {
+            // A title is needed for when the toolbar collapses
+            // this button into an overflow menu on Mac
+            Button(action: action) {
+                Label {
+                    Text(L10n.settings)
+                } icon: {
+                    profileImage
+                }
+                .labelStyle(.iconOnly)
+            }
+        } else {
+            Button(action: action) {
+                profileImage
+            }
+            .accessibilityLabel(L10n.settings)
+        }
     }
 }

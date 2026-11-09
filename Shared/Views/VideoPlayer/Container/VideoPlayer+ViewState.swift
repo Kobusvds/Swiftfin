@@ -158,6 +158,9 @@ extension VideoPlayer {
 
         var isCompact: Bool = false
 
+        /// Set when the player is closed explicitly, rather than swiped away
+        var isClosing: Bool = false
+
         var isScrubbing: Bool = false {
             didSet { refreshAutoDismiss() }
         }

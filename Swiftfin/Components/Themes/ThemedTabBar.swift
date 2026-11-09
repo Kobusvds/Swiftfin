@@ -135,11 +135,15 @@ struct ThemedTabBarInset: ViewModifier {
             }
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 if isEnabled, let tabCoordinator {
-                    ThemedTabBar(
-                        tabCoordinator: tabCoordinator,
-                        scroll: scroll,
-                        bottomSafeArea: bottomSafeArea
-                    )
+                    VStack(spacing: 0) {
+                        NowPlayingBar()
+
+                        ThemedTabBar(
+                            tabCoordinator: tabCoordinator,
+                            scroll: scroll,
+                            bottomSafeArea: bottomSafeArea
+                        )
+                    }
                 }
             }
             .background {

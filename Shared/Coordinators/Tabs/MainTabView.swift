@@ -25,6 +25,11 @@ struct MainTabView: View {
     @AppStorage(AppTheme.storageKey)
     private var appTheme: AppTheme = .default
 
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass)
+    private var horizontalSizeClass
+    #endif
+
     @InjectedObject(\.userSessionManager)
     private var userSessionManager
 
@@ -82,6 +87,14 @@ struct MainTabView: View {
                     }
                 #endif
         }
+        #if os(iOS)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            // Themed tab bars and the tab bar accessory host the bar instead
+            if !(appTheme.isThemed && horizontalSizeClass == .compact), !usesTabBarAccessory {
+                NowPlayingBar()
+            }
+        }
+        #endif
         .environmentObject(tabCoordinator)
         .environment(\.tabCoordinator, tabCoordinator)
         .environment(\.tabItemSelected, tab.publisher)
@@ -114,6 +127,15 @@ struct MainTabView: View {
         }
     }
 
+    #if os(iOS)
+    /// On iPhone the Now Playing bar is hosted by the system tab bar
+    private var usesTabBarAccessory: Bool {
+        guard #available(iOS 26.1, *) else { return false }
+
+        return UIDevice.isPhone && !appTheme.isThemed && !ProcessInfo.processInfo.isiOSAppOnMac
+    }
+    #endif
+
     @ViewBuilder
     private func tabContent() -> some View {
         #if os(tvOS)
@@ -129,8 +151,15 @@ struct MainTabView: View {
         #else
         if ProcessInfo.processInfo.isiOSAppOnMac {
             tabView()
-        } else if #available(iOS 26, *) {
+        } else if #available(iOS 26.1, *) {
             // Collapse the tab bar to just the selected tab while scrolling down
+            tabView()
+                .tabBarMinimizeBehavior(.onScrollDown)
+                // Like Apple Music, sits above the tab bar and inline when it minimizes
+                .tabViewBottomAccessory(isEnabled: usesTabBarAccessory && NowPlayingBar.isVisible) {
+                    NowPlayingBar.Accessory()
+                }
+        } else if #available(iOS 26, *) {
             tabView()
                 .tabBarMinimizeBehavior(.onScrollDown)
         } else {

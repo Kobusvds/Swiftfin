@@ -30,6 +30,13 @@ class AVMediaPlayerProxy: NSObject,
     var scrubbedSeconds: Binding<Duration> = .constant(.zero)
 
     let avPlayerLayer: AVPlayerLayer
+
+    /// The item currently loaded into the player
+    private weak var loadedItem: MediaPlayerItem?
+
+    /// Mac asks to restore the player both when returning to the app and
+    /// when closing Picture in Picture, so wait to see which one it was
+    private var isAwaitingPictureInPictureRestore = false
     let player: AVPlayer
 
     #if os(tvOS)
@@ -95,6 +102,14 @@ class AVMediaPlayerProxy: NSObject,
 
     func stop() {
         player.pause()
+
+        #if os(iOS)
+        // The player view is gone, so end Picture in Picture here
+        if DetachedPictureInPicture.isDetached(self) {
+            DetachedPictureInPicture.clear()
+            playbackStopped()
+        }
+        #endif
     }
 
     func jumpForward(_ seconds: Duration) {
@@ -251,6 +266,25 @@ extension AVMediaPlayerProxy: AVPictureInPictureControllerDelegate {
     nonisolated func pictureInPictureControllerDidStopPictureInPicture(_ controller: AVPictureInPictureController) {
         Task { @MainActor in
             isPiPActive.value = false
+
+            #if os(iOS)
+            guard DetachedPictureInPicture.isDetached(self), !DetachedPictureInPicture.isRestoring else { return }
+
+            if isAwaitingPictureInPictureRestore {
+                isAwaitingPictureInPictureRestore = false
+
+                // Closing the window on Mac pauses playback, while returning keeps playing
+                try? await Task.sleep(for: .milliseconds(300))
+
+                if player.rate != 0 {
+                    DetachedPictureInPicture.restore()
+                    return
+                }
+            }
+
+            // Closed without returning to the app, so end playback
+            await DetachedPictureInPicture.manager?.stop()
+            #endif
         }
     }
 
@@ -268,6 +302,18 @@ extension AVMediaPlayerProxy: AVPictureInPictureControllerDelegate {
         _ controller: AVPictureInPictureController,
         restoreUserInterfaceForPictureInPictureStopWithCompletionHandler completionHandler: @escaping (Bool) -> Void
     ) {
+        #if os(iOS)
+        Task { @MainActor in
+            guard DetachedPictureInPicture.isDetached(self), !DetachedPictureInPicture.isRestoring else { return }
+
+            if ProcessInfo.processInfo.isiOSAppOnMac {
+                isAwaitingPictureInPictureRestore = true
+            } else {
+                DetachedPictureInPicture.restore()
+            }
+        }
+        #endif
+
         completionHandler(true)
     }
 }
@@ -277,6 +323,11 @@ extension AVMediaPlayerProxy: AVPictureInPictureControllerDelegate {
 extension AVMediaPlayerProxy {
 
     func playNew(item: MediaPlayerItem) {
+        // Already playing, such as when the player is restored from Picture in Picture
+        guard item !== loadedItem || player.currentItem == nil else { return }
+
+        loadedItem = item
+
         let playerItem = AVPlayerItem(url: item.url)
         playerItem.externalMetadata = item.baseItem.avMetadata
 
@@ -299,6 +350,8 @@ extension AVMediaPlayerProxy {
 
     func playbackStopped() {
         teardownPiP()
+
+        loadedItem = nil
 
         #if os(tvOS)
         displayManager?.preferredDisplayCriteria = nil

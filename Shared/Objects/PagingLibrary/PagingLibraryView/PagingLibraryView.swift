@@ -44,6 +44,10 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
     private var isSafeAreaBarApplied: Bool = false
     @State
     private var coverFlowIndex: Int = 0
+    #if os(tvOS)
+    @State
+    private var isPresentingLibraryStyleDialog: Bool = false
+    #endif
 
     @StateObject
     private var focusCoordinator = FocusCoordinator(waitingFor: Focus.firstElement.rawValue)
@@ -153,6 +157,9 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
             ) { element in
                 element.makeBody(libraryStyle: libraryStyle)
                     #if os(tvOS)
+                        // Grid cells are hosted in UIKit, so handle the remote's
+                        // Play/Pause press within each cell as well
+                        .onPlayPauseCommand(perform: presentLibraryStyleDialog)
                         .if(element.id == viewModel.displayedElements.first?.id) { view in
                             view
                                 .coordinatedFocus(Focus.firstElement.rawValue)
@@ -275,6 +282,52 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
         viewModel.library.makeMenuContent(environment: $viewModel.environment)
     }
 
+    #if os(tvOS)
+    private func presentLibraryStyleDialog() {
+        guard libraryStyleOptions.hasVisibleControls else { return }
+        isPresentingLibraryStyleDialog = true
+    }
+
+    /// Library style options for the Play/Pause dialog. tvOS dialogs only show
+    /// buttons, so each option is a button with the current selection checked.
+    @ViewBuilder
+    private var libraryStyleDialogContent: some View {
+        let libraryStyle = storedLibraryStyleBinding
+
+        if libraryStyleOptions.displayTypes.count > 1 {
+            ForEach(libraryStyleOptions.displayTypes, id: \.self) { displayType in
+                Button(
+                    libraryStyleDialogTitle(
+                        "\(L10n.layout): \(displayType.displayTitle)",
+                        isSelected: self.libraryStyle.displayType == displayType
+                    )
+                ) {
+                    libraryStyle.wrappedValue.displayType = displayType
+                }
+            }
+        }
+
+        if libraryStyleOptions.posterDisplayTypes.count > 1 {
+            ForEach(libraryStyleOptions.posterDisplayTypes, id: \.self) { posterDisplayType in
+                Button(
+                    libraryStyleDialogTitle(
+                        "\(L10n.posters): \(posterDisplayType.displayTitle)",
+                        isSelected: self.libraryStyle.posterDisplayType == posterDisplayType
+                    )
+                ) {
+                    libraryStyle.wrappedValue.posterDisplayType = posterDisplayType
+                }
+            }
+        }
+
+        Button(L10n.cancel, role: .cancel) {}
+    }
+
+    private func libraryStyleDialogTitle(_ title: String, isSelected: Bool) -> String {
+        isSelected ? "\(title) ✓" : title
+    }
+    #endif
+
     /// Whether the items grid is showing, which hosts the header itself
     private var isShowingElements: Bool {
         viewModel.state == .content &&
@@ -395,6 +448,14 @@ extension PagingLibraryView {
             viewModel.refresh()
         }
         #if os(tvOS)
+        .onPlayPauseCommand(perform: presentLibraryStyleDialog)
+        .confirmationDialog(
+            displayTitle ?? viewModel.library.parent.displayTitle,
+            isPresented: $isPresentingLibraryStyleDialog,
+            titleVisibility: .visible
+        ) {
+            libraryStyleDialogContent
+        }
         .environmentObject(focusCoordinator)
         .themedPage(isGlowing: true)
         #else

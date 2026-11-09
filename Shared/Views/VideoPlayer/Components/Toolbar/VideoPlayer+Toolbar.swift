@@ -31,6 +31,7 @@ extension VideoPlayer.PlaybackControls {
                 if viewState.isPresentingSupplement {
                     viewState.selectedSupplementID = nil
                 } else {
+                    viewState.isClosing = true
                     manager.stop()
                     router.dismiss()
                 }
