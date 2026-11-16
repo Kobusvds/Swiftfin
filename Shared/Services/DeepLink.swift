@@ -19,6 +19,9 @@ struct DeepLink: Equatable {
         /// A main navigation tab, identified by `NavigationTab.id`
         case tab(id: String)
 
+        /// Opens a random movie or show from a library
+        case random(libraryID: String)
+
         // TODO: able to launch library by ID without item pre-retrieval?
 //        case library(id: String)
     }
@@ -31,7 +34,7 @@ struct DeepLink: Equatable {
     /// The app only receives links for the schemes it registers, so any scheme is matched here.
     init?(_ url: URL) {
         guard let match = url.absoluteString.wholeMatch(
-            of: /^[A-Za-z][A-Za-z0-9+.\-]*:\/\/(?<serverID>[A-Za-z0-9-]+)\/(?<userID>[A-Za-z0-9-]+)\/(?<destinationType>item|library|play|tab)\/(?<destinationID>[A-Za-z0-9-]+)\/?$/
+            of: /^[A-Za-z][A-Za-z0-9+.\-]*:\/\/(?<serverID>[A-Za-z0-9-]+)\/(?<userID>[A-Za-z0-9-]+)\/(?<destinationType>item|library|play|random|tab)\/(?<destinationID>[A-Za-z0-9-]+)\/?$/
         ) else { return nil }
 
         self.serverID = String(match.output.serverID)
@@ -44,6 +47,8 @@ struct DeepLink: Equatable {
             self.destination = .tab(id: destinationID)
         case "play":
             self.destination = .play(id: destinationID)
+        case "random":
+            self.destination = .random(libraryID: destinationID)
         default:
             self.destination = .item(id: destinationID)
         }
@@ -55,7 +60,7 @@ struct DeepLink: Equatable {
         switch destination {
         case let .item(id):
             .item(id: id)
-        case .play, .tab:
+        case .play, .random, .tab:
             nil
 //        case let .library(id):
 //            let library = try await getItem(id: id, userSession: session)

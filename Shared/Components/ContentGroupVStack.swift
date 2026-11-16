@@ -36,6 +36,8 @@ struct ContentGroupVStack: View {
                     // Headers stay edge to edge
                     .padding(.leading, group.id == ItemView.Component.header ? 0 : bodyLeadingInset)
                     .coordinatedFocus(group.id)
+                    // Lets scroll views scroll to a group
+                    .id(group.id)
             }
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)

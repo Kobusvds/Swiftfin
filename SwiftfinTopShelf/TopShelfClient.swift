@@ -46,11 +46,11 @@ enum TopShelfClient {
 
     struct Content {
         let continueWatching: [TopShelfItem]
-        let nextUp: [TopShelfItem]
-        let recentlyAdded: [TopShelfItem]
+        /// Dice posters opening a random pick, one per library tab in tab order
+        let randomPicks: [TopShelfItem]
     }
 
-    static func content(limit: Int) async throws -> Content {
+    static func content(continueWatchingLimit: Int) async throws -> Content {
         guard let account = WidgetSharedStore.account,
               let accessToken = WidgetSharedStore.accessToken
         else {
@@ -59,33 +59,18 @@ enum TopShelfClient {
 
         let client = Client(account: account, accessToken: accessToken)
 
-        async let resume = client.items(
+        // A failing request shouldn't hide the dice posters
+        let resumeItems = (try? await client.items(
             path: "UserItems/Resume",
             queryItems: [
-                .init(name: "limit", value: "\(limit)"),
+                .init(name: "limit", value: "\(continueWatchingLimit)"),
                 .init(name: "mediaTypes", value: "Video"),
             ]
-        )
-        async let nextUp = client.items(
-            path: "Shows/NextUp",
-            queryItems: [
-                .init(name: "limit", value: "\(limit)"),
-                // Episodes in progress are already in Continue Watching
-                .init(name: "enableResumable", value: "false"),
-            ]
-        )
-        async let latest = client.latestItems(limit: limit)
-
-        // A failing row shouldn't hide the others
-        let resumeItems = (try? await resume) ?? []
-        let resumeIDs = Set(resumeItems.map(\.id))
-        let nextUpItems = ((try? await nextUp) ?? []).filter { !resumeIDs.contains($0.id) }
-        let latestItems = (try? await latest) ?? []
+        )) ?? []
 
         return Content(
-            continueWatching: resumeItems.map { client.topShelfItem(for: $0, shape: .landscape, showsProgress: true) },
-            nextUp: nextUpItems.map { client.topShelfItem(for: $0, shape: .landscape, showsProgress: false) },
-            recentlyAdded: latestItems.map { client.topShelfItem(for: $0, shape: .poster, showsProgress: false) }
+            continueWatching: resumeItems.map { client.topShelfItem(for: $0, shape: .poster, showsProgress: true) },
+            randomPicks: WidgetSharedStore.tabs.compactMap { client.randomPickItem(for: $0) }
         )
     }
 }
@@ -100,19 +85,6 @@ private struct Client {
     func items(path: String, queryItems: [URLQueryItem]) async throws -> [ItemDto] {
         let data = try await send(path: path, queryItems: queryItems)
         return try JSONDecoder().decode(ItemsResponse.self, from: data).items
-    }
-
-    /// `Items/Latest` returns a bare array, with new episodes grouped by series
-    func latestItems(limit: Int) async throws -> [ItemDto] {
-        let data = try await send(
-            path: "Items/Latest",
-            queryItems: [
-                .init(name: "limit", value: "\(limit)"),
-                .init(name: "includeItemTypes", value: "Movie,Series,Episode"),
-                .init(name: "groupItems", value: "true"),
-            ]
-        )
-        return try JSONDecoder().decode([ItemDto].self, from: data)
     }
 
     private func send(path: String, queryItems: [URLQueryItem]) async throws -> Data {
@@ -152,7 +124,12 @@ private struct Client {
     // MARK: - Items
 
     func topShelfItem(for item: ItemDto, shape: TopShelfClient.ImageShape, showsProgress: Bool) -> TopShelfItem {
-        let displayURL = WidgetSharedStore.url(account: account, destination: "item", id: item.id)
+        // Episodes open their show's page, like selecting the show in a library
+        let displayURL = WidgetSharedStore.url(
+            account: account,
+            destination: "item",
+            id: item.isEpisode ? (item.seriesID ?? item.id) : item.id
+        )
 
         return TopShelfItem(
             id: item.id,
@@ -164,6 +141,27 @@ private struct Client {
             playURL: item.isPlayable
                 ? WidgetSharedStore.url(account: account, destination: "play", id: item.id)
                 : displayURL
+        )
+    }
+
+    /// A dice poster for a library tab, opening a random movie or show from it
+    func randomPickItem(for tab: WidgetSharedStore.Tab) -> TopShelfItem? {
+        guard tab.isLibrary else { return nil }
+
+        // Tabs saved before `libraryID` existed only have it in their ID
+        let prefix = "library-"
+        guard let libraryID = tab.libraryID ?? (tab.id.hasPrefix(prefix) ? String(tab.id.dropFirst(prefix.count)) : nil)
+        else { return nil }
+
+        let url = WidgetSharedStore.url(account: account, destination: "random", id: libraryID)
+
+        return TopShelfItem(
+            id: "random-\(libraryID)",
+            title: tab.title,
+            progress: nil,
+            imageURLs: TopShelfRandomTile.imageURLs(libraryID: libraryID, title: tab.title),
+            displayURL: url,
+            playURL: url
         )
     }
 

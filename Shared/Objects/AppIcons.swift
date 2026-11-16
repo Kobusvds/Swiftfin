@@ -49,8 +49,11 @@ enum AppIcon: String, CaseIterable, Displayable, Identifiable {
         rawValue.hasPrefix("nextflix")
     }
 
+    /// The icon compiled in as the bundle's primary app icon (`ASSETCATALOG_COMPILER_APPICON_NAME`).
+    static let primary: AppIcon = .nextflixSunset
+
     var alternateIconName: String? {
-        self == .blue ? nil : iconName
+        self == .primary ? nil : iconName
     }
 
     var displayTitle: String {
@@ -83,6 +86,6 @@ enum AppIcon: String, CaseIterable, Displayable, Identifiable {
     }
 
     static func resolve(alternateIconName: String?) -> Self {
-        allCases.first { $0.alternateIconName == alternateIconName } ?? .blue
+        allCases.first { $0.alternateIconName == alternateIconName } ?? .primary
     }
 }

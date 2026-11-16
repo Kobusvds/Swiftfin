@@ -31,6 +31,8 @@ enum WidgetSharedStore {
         let title: String
         let systemImage: String
         let isLibrary: Bool
+        /// The library's item ID, for library tabs
+        var libraryID: String?
     }
 
     enum WidgetKind {

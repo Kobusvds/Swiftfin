@@ -57,8 +57,25 @@ struct NavigationTab: Displayable, Hashable, Identifiable, Storable, SystemImage
         case .media:
             "media"
         case let .library(id, _, _, _):
-            "library-\(id)"
+            Self.libraryTabID(id)
         }
+    }
+
+    static func libraryTabID(_ libraryID: String) -> String {
+        "library-\(libraryID)"
+    }
+
+    /// The tab as shared with the widgets and top shelf
+    var sharedTab: WidgetSharedStore.Tab {
+        let libraryID: String? = if case let .library(id, _, _, _) = kind { id } else { nil }
+
+        return WidgetSharedStore.Tab(
+            id: id,
+            title: displayTitle,
+            systemImage: systemImage,
+            isLibrary: libraryID != nil,
+            libraryID: libraryID
+        )
     }
 
     var displayTitle: String {

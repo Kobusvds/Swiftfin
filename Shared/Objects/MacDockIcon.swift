@@ -18,7 +18,7 @@ enum MacDockIcon {
     }
 
     static var savedIcon: AppIcon {
-        UserDefaults.standard.string(forKey: storageKey).flatMap(AppIcon.init(rawValue:)) ?? .blue
+        UserDefaults.standard.string(forKey: storageKey).flatMap(AppIcon.init(rawValue:)) ?? .primary
     }
 
     static func applySavedIcon() {

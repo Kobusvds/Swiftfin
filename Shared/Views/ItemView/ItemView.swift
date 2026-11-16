@@ -31,6 +31,8 @@ struct ItemView: View {
 
     @State
     private var contentSize: CGSize = .zero
+    @State
+    private var episodeAutoFocus = EpisodeAutoFocus()
 
     @StateObject
     private var focusCoordinator = FocusCoordinator(initial: Component.play)
@@ -72,6 +74,15 @@ struct ItemView: View {
         }
     }
 
+    /// On tvOS, enhanced series pages open scrolled down to the episodes. Movies keep the hero image in view.
+    private var opensAtEpisodes: Bool {
+        #if os(tvOS)
+        isEnhanced && provider.item.type == .series
+        #else
+        false
+        #endif
+    }
+
     private var contentGroups: [any ContentGroup] {
         let header: any ContentGroup = switch (isEnhanced, isCompact) {
         case (true, true):
@@ -94,8 +105,10 @@ struct ItemView: View {
         ContentGroupScrollView(
             provider: provider,
             groups: contentGroups,
-            isEnhanced: isEnhanced
+            isEnhanced: isEnhanced,
+            scrollsToEpisodes: opensAtEpisodes
         )
+        .environment(\.episodeAutoFocus, opensAtEpisodes ? episodeAutoFocus : nil)
     }
 
     @ViewBuilder

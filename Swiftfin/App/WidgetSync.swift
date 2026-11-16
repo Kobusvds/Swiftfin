@@ -49,16 +49,7 @@ enum WidgetSync {
 
     /// Publishes the main navigation tabs, used by the libraries widget
     static func update(tabs: [NavigationTab]) {
-        let tabs = (tabs.isEmpty ? NavigationTab.defaultTabs : tabs).map { tab in
-            let isLibrary = if case .library = tab.kind { true } else { false }
-
-            return WidgetSharedStore.Tab(
-                id: tab.id,
-                title: tab.displayTitle,
-                systemImage: tab.systemImage,
-                isLibrary: isLibrary
-            )
-        }
+        let tabs = (tabs.isEmpty ? NavigationTab.defaultTabs : tabs).map(\.sharedTab)
 
         guard WidgetSharedStore.tabs != tabs else { return }
 

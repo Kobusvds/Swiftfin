@@ -71,10 +71,34 @@ struct MainTabView: View {
                     queuesEpisodes: true,
                     userSession: userSession
                 )
+            } else if case let .random(libraryID) = deepLink.destination {
+                guard let userSession = userSessionManager.currentSession else { return }
+
+                if let itemID = try? await randomItemID(libraryID: libraryID, userSession: userSession) {
+                    await tabCoordinator.route(to: .item(id: itemID))
+                } else {
+                    // Libraries without movies or shows open the library tab instead
+                    tabCoordinator.select(tabID: NavigationTab.libraryTabID(libraryID))
+                }
             } else if let route = deepLink.route() {
                 await tabCoordinator.route(to: route)
             }
         }
+    }
+
+    /// A random movie or show from the library, used by the top shelf's dice tiles
+    private func randomItemID(libraryID: String, userSession: UserSession) async throws -> String? {
+        var parameters = Paths.GetItemsParameters()
+        parameters.userID = userSession.user.id
+        parameters.parentID = libraryID
+        parameters.isRecursive = true
+        parameters.includeItemTypes = [.movie, .series]
+        parameters.sortBy = [.random]
+        parameters.limit = 1
+
+        let response = try await userSession.client.send(Paths.getItems(parameters: parameters))
+
+        return response.value.items?.first?.id
     }
 
     @ViewBuilder
@@ -177,6 +201,8 @@ struct MainTabView: View {
 
                 #if os(iOS)
                 WidgetSync.update(tabs: navigationTabs)
+                #else
+                TopShelfSync.update(tabs: navigationTabs)
                 #endif
             }
             .onChange(of: userSessionManager.pendingDeepLink) {
@@ -192,6 +218,8 @@ struct MainTabView: View {
 
                 #if os(iOS)
                 WidgetSync.update(tabs: navigationTabs)
+                #else
+                TopShelfSync.update(tabs: navigationTabs)
                 #endif
             }
             #if os(tvOS)

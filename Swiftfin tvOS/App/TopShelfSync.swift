@@ -48,4 +48,14 @@ enum TopShelfSync {
             WidgetSharedStore.accessToken = accessToken
         }
     }
+
+    /// Publishes the main navigation tabs, used for the top shelf's random pick tiles
+    static func update(tabs: [NavigationTab]) {
+        let tabs = (tabs.isEmpty ? NavigationTab.defaultTabs : tabs).map(\.sharedTab)
+
+        guard WidgetSharedStore.tabs != tabs else { return }
+
+        WidgetSharedStore.tabs = tabs
+        TVTopShelfContentProvider.topShelfContentDidChange()
+    }
 }

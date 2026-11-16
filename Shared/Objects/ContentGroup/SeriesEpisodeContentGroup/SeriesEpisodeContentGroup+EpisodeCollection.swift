@@ -19,6 +19,10 @@ extension SeriesEpisodeContentGroup {
         case error(Error)
         case loading(Int)
 
+        var isEpisode: Bool {
+            if case .episode = self { true } else { false }
+        }
+
         static var loadingElements: [Self] {
             (0 ..< 10).map { .loading($0) }
         }
@@ -129,6 +133,8 @@ extension SeriesEpisodeContentGroup {
 
         @Environment(\.appTheme)
         private var theme
+        @Environment(\.episodeAutoFocus)
+        private var episodeAutoFocus
 
         /// Whether there's room for several episodes, such as an iPhone in landscape
         @State
@@ -233,7 +239,29 @@ extension SeriesEpisodeContentGroup {
             )
             .accessibilityElement(children: .contain)
             .accessibilityLabel(L10n.seasons)
+            #if os(tvOS)
+            .task(id: elements.contains(where: \.isEpisode)) {
+                await focusEpisodesIfRequested()
+            }
+            #endif
         }
+
+        #if os(tvOS)
+        /// Moves focus to the preferred episode the first time episodes load, if the page asked for it
+        private func focusEpisodesIfRequested() async {
+            guard let episodeAutoFocus, episodeAutoFocus.isPending,
+                  elements.contains(where: \.isEpisode)
+            else { return }
+
+            episodeAutoFocus.isPending = false
+
+            // Let the collection lay out its cells before moving focus into it
+            try? await Task.sleep(for: .milliseconds(300))
+
+            focusedSection = .episodes
+            focusedElement = preferredElementID
+        }
+        #endif
     }
 
     private struct EpisodeElementCard: View {
@@ -279,4 +307,16 @@ extension SeriesEpisodeContentGroup {
             }
         }
     }
+}
+
+/// Asks the episode collection to take focus once, the first time its episodes load
+@MainActor
+final class EpisodeAutoFocus {
+    var isPending = true
+}
+
+extension EnvironmentValues {
+
+    @Entry
+    var episodeAutoFocus: EpisodeAutoFocus? = nil
 }

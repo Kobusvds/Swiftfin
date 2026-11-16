@@ -8,11 +8,12 @@
 
 import TVServices
 
-/// Shows Continue Watching, Up Next, and Recently Added rows in the Apple TV top shelf
+/// Shows a row of posters in the Apple TV top shelf: the first few Continue Watching items,
+/// then a dice poster per library tab that opens a random pick
 @objc(ContentProvider)
 class ContentProvider: TVTopShelfContentProvider {
 
-    private static let itemLimit = 12
+    private static let continueWatchingLimit = 3
 
     override init() {
         super.init()
@@ -30,7 +31,7 @@ class ContentProvider: TVTopShelfContentProvider {
         // Signed out, so the system shows the static top shelf image
         let content: TopShelfClient.Content
         do {
-            content = try await TopShelfClient.content(limit: Self.itemLimit)
+            content = try await TopShelfClient.content(continueWatchingLimit: Self.continueWatchingLimit)
         } catch {
             TopShelfDiagnostics.record(.failed, "\(error)")
             return diagnosticsContent(title: "\(status) · error \(error)")
@@ -39,17 +40,7 @@ class ContentProvider: TVTopShelfContentProvider {
         let sections = [
             section(
                 title: String(localized: "Continue Watching"),
-                items: content.continueWatching,
-                shape: .hdtv
-            ),
-            section(
-                title: String(localized: "Up Next"),
-                items: content.nextUp,
-                shape: .hdtv
-            ),
-            section(
-                title: String(localized: "Recently Added"),
-                items: content.recentlyAdded,
+                items: content.continueWatching + content.randomPicks,
                 shape: .poster
             ),
         ]
@@ -57,7 +48,7 @@ class ContentProvider: TVTopShelfContentProvider {
 
         TopShelfDiagnostics.record(
             sections.isEmpty ? .empty : .finished,
-            "\(content.continueWatching.count) resume, \(content.nextUp.count) next up, \(content.recentlyAdded.count) latest"
+            "\(content.continueWatching.count) resume, \(content.randomPicks.count) random picks"
         )
 
         guard sections.isNotEmpty else {
