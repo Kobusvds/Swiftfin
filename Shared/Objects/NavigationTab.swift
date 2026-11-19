@@ -17,6 +17,7 @@ struct NavigationTab: Displayable, Hashable, Identifiable, Storable, SystemImage
         case home
         case search
         case media
+        case music
         case library(
             id: String,
             name: String,
@@ -56,6 +57,8 @@ struct NavigationTab: Displayable, Hashable, Identifiable, Storable, SystemImage
             "search"
         case .media:
             "media"
+        case .music:
+            "music"
         case let .library(id, _, _, _):
             Self.libraryTabID(id)
         }
@@ -86,6 +89,8 @@ struct NavigationTab: Displayable, Hashable, Identifiable, Storable, SystemImage
             L10n.search
         case .media:
             L10n.media
+        case .music:
+            "Music"
         case let .library(_, name, _, _):
             name
         }
@@ -101,6 +106,11 @@ struct NavigationTab: Displayable, Hashable, Identifiable, Storable, SystemImage
         .init(kind: .media),
     ]
 
+    /// Built-in tabs that can be added in settings, but aren't shown by default
+    static let optionalTabs: [NavigationTab] = [
+        .init(kind: .music),
+    ]
+
     static func defaultSystemImage(for kind: Kind) -> String {
         switch kind {
         case .home:
@@ -109,6 +119,8 @@ struct NavigationTab: Displayable, Hashable, Identifiable, Storable, SystemImage
             "magnifyingglass"
         case .media:
             "rectangle.stack.fill"
+        case .music:
+            "music.note.tv"
         case let .library(_, _, collectionType, _):
             switch collectionType {
             case .movies:

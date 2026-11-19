@@ -44,6 +44,8 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>The Music tab plays a playlist from your Apple Music library while your videos play.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>${PRODUCT_NAME} uses Face ID to lock and access local users.</string>
 	<key>NSLocalNetworkUsageDescription</key>

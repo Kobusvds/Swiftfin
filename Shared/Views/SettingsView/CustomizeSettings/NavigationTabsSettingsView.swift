@@ -38,7 +38,7 @@ struct NavigationTabsSettingsView: View {
     private var availableTabs: [NavigationTab] {
         let libraryTabs = libraries.compactMap(NavigationTab.init(library:))
 
-        return (NavigationTab.defaultTabs + libraryTabs)
+        return (NavigationTab.defaultTabs + NavigationTab.optionalTabs + libraryTabs)
             .filter { tab in !tabs.contains(where: { $0.id == tab.id }) }
     }
 

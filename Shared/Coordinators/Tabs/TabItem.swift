@@ -139,6 +139,15 @@ extension TabItem {
                     }
             }
 
+        case .music:
+            return TabItem(
+                id: tab.id,
+                title: tab.displayTitle,
+                systemImage: tab.systemImage
+            ) {
+                MusicModeView()
+            }
+
         case let .library(id, name, collectionType, itemType):
             return TabItem(
                 id: tab.id,

@@ -254,6 +254,29 @@ extension Defaults.Keys {
         }
     }
 
+    enum MusicMode {
+
+        static var videoSource: Key<MusicModeVideoSource?> {
+            UserKey("musicModeVideoSource", default: nil)
+        }
+
+        static var musicPlaylist: Key<MusicModePlaylist?> {
+            UserKey("musicModeMusicPlaylist", default: nil)
+        }
+
+        static var shuffleVideos: Key<Bool> {
+            UserKey("musicModeShuffleVideos", default: false)
+        }
+
+        static var shuffleSongs: Key<Bool> {
+            UserKey("musicModeShuffleSongs", default: false)
+        }
+
+        static var showsVisualizer: Key<Bool> {
+            UserKey("musicModeShowsVisualizer", default: true)
+        }
+    }
+
     enum VideoPlayer {
 
         static var appMaximumBitrate: Key<PlaybackBitrate> {
